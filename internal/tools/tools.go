@@ -1,11 +1,11 @@
-// Package tools provides MCP tools for the chile-bcn-mcp server.
+// Package tools provides MCP tools for the lex-chile-mcp server.
 package tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/bcn"
-	"github.com/alvarosdev/chile-bcn-mcp/internal/cgr"
+	"github.com/alvarosdev/lex-chile-mcp/internal/bcn"
+	"github.com/alvarosdev/lex-chile-mcp/internal/cgr"
 )
 
 // RegisterTools registers all BCN tools on the MCP server. The law client is

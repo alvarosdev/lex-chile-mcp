@@ -134,6 +134,6 @@ jobs:
           gh release create "$TAG" dist.zip \
             --draft \
             --generate-notes \
-            --title "chile-bcn-mcp ${{ needs.version.outputs.version }}" \
+            --title "lex-chile-mcp ${{ needs.version.outputs.version }}" \
             --repo "${{ github.repository }}"
           echo "✓ Draft release $TAG created — publish it manually"

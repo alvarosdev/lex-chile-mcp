@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/bcn"
+	"github.com/alvarosdev/lex-chile-mcp/internal/bcn"
 )
 
 // GetLawSummarySuite validates the get_law_summary tool against a

@@ -4,14 +4,14 @@
 all: false
 template: testify
 packages:
-  github.com/alvarosdev/chile-bcn-mcp/internal/bcn:
+  github.com/alvarosdev/lex-chile-mcp/internal/bcn:
     interfaces:
       LawClient:
         config:
           dir: "{{.InterfaceDir}}"
           filename: "{{.InterfaceName | snakecase}}_mock.go"
           structname: "Mock{{.InterfaceName}}"
-  github.com/alvarosdev/chile-bcn-mcp/internal/cgr:
+  github.com/alvarosdev/lex-chile-mcp/internal/cgr:
     interfaces:
       CgrClient:
         config:

@@ -1,9 +1,9 @@
 services:
-  chile-bcn-mcp:
+  lex-chile-mcp:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: chile-bcn-mcp-server
+    container_name: lex-chile-mcp-server
     ports:
       - "${MCP_PORT:-8000}:8000"
     environment:

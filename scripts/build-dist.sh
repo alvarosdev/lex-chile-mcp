@@ -18,7 +18,7 @@ command -v python3 >/dev/null || { echo "✗ 'python3' is required (used for zip
 
 cd "$(dirname "$0")/.."
 DIST="dist"
-BINARY="chile-bcn-mcp"
+BINARY="lex-chile-mcp"
 
 rm -rf "$DIST"
 mkdir -p "$DIST"
@@ -44,8 +44,8 @@ for t in "${TARGETS[@]}"; do
 
   echo "  → $os/$arch"
   CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" \
-    go build -trimpath -ldflags="-s -w -X github.com/alvarosdev/chile-bcn-mcp/internal/version.Version=${VERSION#v}" \
-    -o "$out" ./cmd/chile-bcn-mcp
+    go build -trimpath -ldflags="-s -w -X github.com/alvarosdev/lex-chile-mcp/internal/version.Version=${VERSION#v}" \
+    -o "$out" ./cmd/lex-chile-mcp
 
 done
 

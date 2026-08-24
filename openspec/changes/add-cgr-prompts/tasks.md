@@ -6,7 +6,7 @@
 
 ## 2. Wiring y validación
 
-- [ ] 2.1 Actualizar `cmd/chile-bcn-mcp/main.go` para importar `bcnPrompts` y `cgrPrompts`, hacer `LoadEmbedded()` y `RegisterPrompts()` por dominio (2 singletons), añadir `logger.Info("Prompts loaded", "bcn", len(bcnPS.Names()), "cgr", len(cgrPS.Names()))` y borrar import legacy
+- [ ] 2.1 Actualizar `cmd/lex-chile-mcp/main.go` para importar `bcnPrompts` y `cgrPrompts`, hacer `LoadEmbedded()` y `RegisterPrompts()` por dominio (2 singletons), añadir `logger.Info("Prompts loaded", "bcn", len(bcnPS.Names()), "cgr", len(cgrPS.Names()))` y borrar import legacy
 - [ ] 2.2 Ejecutar `make check` (build+vet+test), `make fmt-check` y `openspec validate --strict`; verificar `prompts/list` 14 (10+4), `ToolNames()` por dominio, `allowedPlaceholders` con `lang`, y `TestTemplatesReferenceOnlyRegisteredTools` cruzado
 
 ## 3. Documentación

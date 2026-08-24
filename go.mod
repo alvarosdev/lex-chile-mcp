@@ -1,4 +1,4 @@
-module github.com/alvarosdev/chile-bcn-mcp
+module github.com/alvarosdev/lex-chile-mcp
 
 go 1.26.6
 

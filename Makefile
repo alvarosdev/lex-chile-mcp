@@ -1,8 +1,8 @@
-BINARY := bin/chile-bcn-mcp
-IMAGE := chile-bcn-mcp:local
-CONTAINER := chile-bcn-mcp
+BINARY := bin/lex-chile-mcp
+IMAGE := lex-chile-mcp:local
+CONTAINER := lex-chile-mcp
 VERSION ?= $(shell cat VERSION 2>/dev/null | tr -d ' \n' | sed 's/^v//')
-LDFLAGS := -s -w -X github.com/alvarosdev/chile-bcn-mcp/internal/version.Version=$(VERSION)
+LDFLAGS := -s -w -X github.com/alvarosdev/lex-chile-mcp/internal/version.Version=$(VERSION)
 # Temporary Bearer token for local testing (make run-http-auth).
 DEV_AUTH_TOKEN ?= devtoken
 # podman is the main container runtime; docker compose is the fallback.
@@ -18,16 +18,16 @@ help: ## Show this help (default target)
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
 build: ## Build the server binary into bin/
-	CGO_ENABLED=0 go build -trimpath -ldflags="$(LDFLAGS)" -o $(BINARY) ./cmd/chile-bcn-mcp
+	CGO_ENABLED=0 go build -trimpath -ldflags="$(LDFLAGS)" -o $(BINARY) ./cmd/lex-chile-mcp
 
 run-http: ## Run the server (HTTP, default config, no auth)
-	go run -ldflags="$(LDFLAGS)" ./cmd/chile-bcn-mcp
+	go run -ldflags="$(LDFLAGS)" ./cmd/lex-chile-mcp
 
 run-http-auth: ## Run the server (HTTP) with a temporary Bearer token for testing (default: devtoken, override: make run-http-auth DEV_AUTH_TOKEN=x)
-	MCP_AUTH_TOKEN=$(DEV_AUTH_TOKEN) go run -ldflags="$(LDFLAGS)" ./cmd/chile-bcn-mcp
+	MCP_AUTH_TOKEN=$(DEV_AUTH_TOKEN) go run -ldflags="$(LDFLAGS)" ./cmd/lex-chile-mcp
 
 run-stdio: ## Run the server over stdio
-	MCP_TRANSPORT=stdio go run -ldflags="$(LDFLAGS)" ./cmd/chile-bcn-mcp
+	MCP_TRANSPORT=stdio go run -ldflags="$(LDFLAGS)" ./cmd/lex-chile-mcp
 test: ## Run all tests (no cache)
 	go test ./... -count=1
 
