@@ -76,7 +76,7 @@ jobs:
       # runner. The Go compilation itself is not emulated: the builder
       # stage pins --platform=$BUILDPLATFORM and cross-compiles.
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
