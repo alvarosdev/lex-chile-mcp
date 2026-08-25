@@ -1,4 +1,4 @@
-// Package server provides the chile-bcn-mcp server setup and configuration.
+// Package server provides the lex-chile-mcp server setup and configuration.
 package server
 
 import (
@@ -9,7 +9,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/version"
+	"github.com/alvarosdev/lex-chile-mcp/internal/version"
 )
 
 // Config holds all runtime configuration read from environment variables.
@@ -45,7 +45,7 @@ func envOrDefault(key, defaultVal string) string {
 // before starting the server.
 func New(logger *slog.Logger) *mcp.Server {
 	opts := &mcp.ServerOptions{
-		Instructions: "Use the chile-bcn-mcp tools to help with your tasks.",
+		Instructions: "Use the lex-chile-mcp tools to help with your tasks.",
 		Logger:       logger,
 		// KeepAlive detects abandoned sessions and cleans up goroutines
 		// (mitigates SDK goroutine leak in streamable HTTP, issue #499).
@@ -55,8 +55,8 @@ func New(logger *slog.Logger) *mcp.Server {
 
 	return mcp.NewServer(
 		&mcp.Implementation{
-			Name:    "chile-bcn-mcp-server",
-			Title:   "Chile BCN MCP Server",
+			Name:    "lex-chile-mcp-server",
+			Title:   "Lex Chile MCP Server",
 			Version: strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(version.Version), "v")),
 		},
 		opts,

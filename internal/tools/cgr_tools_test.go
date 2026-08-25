@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/cgr"
+	"github.com/alvarosdev/lex-chile-mcp/internal/cgr"
 )
 
 func newTestCgrClient(t *testing.T, ctx context.Context, cgrClient cgr.CgrClient) *mcp.ClientSession {

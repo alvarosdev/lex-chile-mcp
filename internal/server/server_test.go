@@ -9,7 +9,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/version"
+	"github.com/alvarosdev/lex-chile-mcp/internal/version"
 )
 
 // unsetEnv removes the given env vars so tests get clean defaults.

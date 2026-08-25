@@ -17,7 +17,7 @@ import (
 	"golang.org/x/sync/singleflight"
 	"resty.dev/v3"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/config"
+	"github.com/alvarosdev/lex-chile-mcp/internal/config"
 )
 
 // Resource ids in api.resources.yaml.

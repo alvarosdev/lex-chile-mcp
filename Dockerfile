@@ -1,5 +1,5 @@
 # ============================================================
-# Chile BCN MCP Server — multi-stage Go build
+# Lex Chile MCP Server — multi-stage Go build
 #
 # Build stage pins the builder to the native platform (BUILDPLATFORM)
 # so Go cross-compiles for the target arch without QEMU emulation
@@ -20,11 +20,11 @@ ARG VERSION=dev
 COPY . .
 
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-    go build -trimpath -ldflags="-s -w -X github.com/alvarosdev/chile-bcn-mcp/internal/version.Version=${VERSION}" -o /out/chile-bcn-mcp ./cmd/chile-bcn-mcp
+    go build -trimpath -ldflags="-s -w -X github.com/alvarosdev/lex-chile-mcp/internal/version.Version=${VERSION}" -o /out/lex-chile-mcp ./cmd/lex-chile-mcp
 
 # Stage 2: Runtime
 FROM gcr.io/distroless/static-debian13:nonroot
-COPY --from=builder /out/chile-bcn-mcp /usr/local/bin/
+COPY --from=builder /out/lex-chile-mcp /usr/local/bin/
 
 # API resources and prompts are baked into the binary via go:embed
 # (internal/config/api.resources.yaml and internal/prompts/prompts.yaml)
@@ -37,4 +37,4 @@ ENV MCP_TRANSPORT=http
 
 EXPOSE 8000
 
-ENTRYPOINT ["chile-bcn-mcp"]
+ENTRYPOINT ["lex-chile-mcp"]

@@ -1,4 +1,4 @@
-// Chile BCN MCP Server.
+// Lex Chile MCP Server.
 //
 // Supports stdio and streamable HTTP transports with optional
 // bearer-token authentication.
@@ -19,13 +19,13 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/auth"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/bcn"
-	"github.com/alvarosdev/chile-bcn-mcp/internal/cgr"
-	"github.com/alvarosdev/chile-bcn-mcp/internal/config"
-	bcnPrompts "github.com/alvarosdev/chile-bcn-mcp/internal/prompts/bcn"
-	cgrPrompts "github.com/alvarosdev/chile-bcn-mcp/internal/prompts/cgr"
-	"github.com/alvarosdev/chile-bcn-mcp/internal/server"
-	"github.com/alvarosdev/chile-bcn-mcp/internal/tools"
+	"github.com/alvarosdev/lex-chile-mcp/internal/bcn"
+	"github.com/alvarosdev/lex-chile-mcp/internal/cgr"
+	"github.com/alvarosdev/lex-chile-mcp/internal/config"
+	bcnPrompts "github.com/alvarosdev/lex-chile-mcp/internal/prompts/bcn"
+	cgrPrompts "github.com/alvarosdev/lex-chile-mcp/internal/prompts/cgr"
+	"github.com/alvarosdev/lex-chile-mcp/internal/server"
+	"github.com/alvarosdev/lex-chile-mcp/internal/tools"
 )
 
 func main() {
@@ -36,7 +36,7 @@ func main() {
 	// Read all configuration once at startup — never in hot paths.
 	cfg := server.LoadConfig()
 
-	logger.Info("Starting Chile BCN MCP Server",
+	logger.Info("Starting Lex Chile MCP Server",
 		"transport", cfg.Transport,
 	)
 

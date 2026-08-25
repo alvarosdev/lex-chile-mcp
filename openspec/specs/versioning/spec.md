@@ -19,14 +19,14 @@ El proyecto SHALL mantener la versión del release en un único archivo `VERSION
 
 ### Requirement: Inyección de versión en tiempo de compilación
 
-El binario SHALL exponer la versión vía `internal/version.Version` (var `string` con valor por defecto `"dev"`), sobreescrita por `-ldflags "-X github.com/alvarosdev/chile-bcn-mcp/internal/version.Version=<version>"` en todos los caminos de build (`Makefile:build`, `scripts/build-dist.sh`, `Dockerfile`).
+El binario SHALL exponer la versión vía `internal/version.Version` (var `string` con valor por defecto `"dev"`), sobreescrita por `-ldflags "-X github.com/alvarosdev/lex-chile-mcp/internal/version.Version=<version>"` en todos los caminos de build (`Makefile:build`, `scripts/build-dist.sh`, `Dockerfile`).
 
 #### Scenario: Build local usa VERSION
 - **WHEN** se ejecuta `make build` sin variables extra
-- **THEN** el binario `bin/chile-bcn-mcp` contiene la versión leída de `VERSION` (sin prefijo `v`)
+- **THEN** el binario `bin/lex-chile-mcp` contiene la versión leída de `VERSION` (sin prefijo `v`)
 
 #### Scenario: Build sin flags reporta dev
-- **WHEN** se ejecuta `go run ./cmd/chile-bcn-mcp` sin `ldflags`
+- **WHEN** se ejecuta `go run ./cmd/lex-chile-mcp` sin `ldflags`
 - **THEN** `internal/version.Version` vale `"dev"` y el servidor reporta `dev` en `mcp.Implementation.Version`
 
 #### Scenario: Build cross-platform inyecta versión

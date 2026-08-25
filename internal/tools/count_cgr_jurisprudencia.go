@@ -7,7 +7,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/cgr"
+	"github.com/alvarosdev/lex-chile-mcp/internal/cgr"
 )
 
 // CountCgrJurisprudenciaArgs carries the arguments of the count_cgr_jurisprudencia tool.

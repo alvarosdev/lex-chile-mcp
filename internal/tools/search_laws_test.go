@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/bcn"
+	"github.com/alvarosdev/lex-chile-mcp/internal/bcn"
 )
 
 // errGeneric is a shared test error for client failures.

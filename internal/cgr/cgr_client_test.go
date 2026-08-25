@@ -16,7 +16,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/config"
+	"github.com/alvarosdev/lex-chile-mcp/internal/config"
 )
 
 type CgrClientSuite struct {

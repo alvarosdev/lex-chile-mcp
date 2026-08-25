@@ -8,7 +8,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/cgr"
+	"github.com/alvarosdev/lex-chile-mcp/internal/cgr"
 )
 
 // GetCgrDictamenArgs carries the arguments of the get_cgr_dictamen tool.

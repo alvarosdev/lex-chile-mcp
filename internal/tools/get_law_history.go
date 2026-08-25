@@ -7,7 +7,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/alvarosdev/chile-bcn-mcp/internal/bcn"
+	"github.com/alvarosdev/lex-chile-mcp/internal/bcn"
 )
 
 // GetLawHistoryArgs carries the arguments of the get_law_history tool.

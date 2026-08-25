@@ -36,8 +36,8 @@ Estado actual: `internal/prompts/prompts.go` + `prompts.yaml` (1 package, 1 `Pro
 
 **Decisión 4 — Wiring en `main.go` sin fachada (elegido):**
 ```go
-import bcnPrompts "github.com/alvarosdev/chile-bcn-mcp/internal/prompts/bcn"
-import cgrPrompts "github.com/alvarosdev/chile-bcn-mcp/internal/prompts/cgr"
+import bcnPrompts "github.com/alvarosdev/lex-chile-mcp/internal/prompts/bcn"
+import cgrPrompts "github.com/alvarosdev/lex-chile-mcp/internal/prompts/cgr"
 
 bcnPS, err := bcnPrompts.LoadEmbedded() // fail-fast
 cgrPS, err := cgrPrompts.LoadEmbedded()
@@ -66,5 +66,5 @@ cgrPrompts.RegisterPrompts(srv, cgrPS)
 2. Crear `internal/prompts/bcn/prompts.go|yaml|test.go` vía `git mv` de `internal/prompts/` + añadir `interpret_law` y `{{.lang}}`, actualizar `expectedPromptNames[10]`.
 3. Crear `internal/prompts/cgr/prompts.go|yaml|test.go` con 4 prompts curados (preamble corto + referencia a `interpret_dictamen`), `expectedPromptNames[4]`, `allowedPlaceholders` con `lang`.
 4. Borrar `internal/prompts/prompts.go|yaml|test.go` originales.
-5. Actualizar `cmd/chile-bcn-mcp/main.go` (2 imports, 2 loads, 2 registers) y `README.md` (tabla de prompts por dominio).
+5. Actualizar `cmd/lex-chile-mcp/main.go` (2 imports, 2 loads, 2 registers) y `README.md` (tabla de prompts por dominio).
 6. `go vet`, `make check`, `openspec validate --strict`; verificar `prompts/list` 14 y `TestTemplatesReferenceOnlyRegisteredTools` por dominio.

@@ -8,7 +8,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	promptinternal "github.com/alvarosdev/chile-bcn-mcp/internal/prompts/internal"
+	promptinternal "github.com/alvarosdev/lex-chile-mcp/internal/prompts/internal"
 )
 
 const (
