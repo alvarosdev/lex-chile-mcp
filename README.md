@@ -20,8 +20,10 @@ Dale a tu IA acceso directo a las leyes chilenas. Pregunta en lenguaje natural y
 * 🔗 Ver qué leyes la modificaron y a cuáles modificó
 
 **Contraloría:**
-* 🏛️ Buscar dictámenes como en Google
-
+* 🏛️ Buscar dictámenes por tema — "bonos", "licencias médicas", encuentra los documentos oficiales
+* 💬 Entender qué resolvió — sin leer todo el lenguaje legal, directo al criterio
+* 🔖 Con la fuente a mano — siempre con materia y documento oficial para citar
+ 
 
 **Para tu IA:**
 * 🧠 14 guías listas — analiza, explica simple, compara versiones, revisa si es constitucional
