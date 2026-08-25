@@ -12,13 +12,39 @@ import (
 )
 
 const (
+	toolSearchCgr              = "search_cgr"
 	toolSearchCgrDictamenes    = "search_cgr_dictamenes"
 	toolGetCgrDictamen         = "get_cgr_dictamen"
+	toolGetCgrInstructivo      = "get_cgr_instructivo"
+	toolGetCgrContable         = "get_cgr_contable"
+	toolGetCgrAuditoria        = "get_cgr_auditoria"
+	toolGetCgrConsolidado      = "get_cgr_consolidado"
+	toolGetCgrCuenta           = "get_cgr_cuenta"
+	toolGetCgrLegislacion      = "get_cgr_legislacion"
 	toolCountCgrJurisprudencia = "count_cgr_jurisprudencia"
+
+	// Aliases for assignment naming (without Cgr prefix) — kept for compat.
+	toolGetInstructivo = toolGetCgrInstructivo
+	toolGetContable    = toolGetCgrContable
+	toolGetAuditoria   = toolGetCgrAuditoria
+	toolGetConsolidado = toolGetCgrConsolidado
+	toolGetCuenta      = toolGetCgrCuenta
+	toolGetLegislacion = toolGetCgrLegislacion
 )
 
 func ToolNames() []string {
-	return []string{toolSearchCgrDictamenes, toolGetCgrDictamen, toolCountCgrJurisprudencia}
+	return []string{
+		toolSearchCgr,
+		toolSearchCgrDictamenes,
+		toolGetCgrDictamen,
+		toolGetCgrInstructivo,
+		toolGetCgrContable,
+		toolGetCgrAuditoria,
+		toolGetCgrConsolidado,
+		toolGetCgrCuenta,
+		toolGetCgrLegislacion,
+		toolCountCgrJurisprudencia,
+	}
 }
 
 //go:embed prompts.yaml
@@ -29,6 +55,8 @@ var expectedPromptNames = []string{
 	"analyze_dictamen",
 	"explain_dictamen_simply",
 	"interpret_dictamen",
+	"analyze_contable_instructivo",
+	"analyze_auditoria_consolidado",
 }
 
 var allowedPlaceholders = map[string]bool{
@@ -38,8 +66,22 @@ var allowedPlaceholders = map[string]bool{
 	"order":                         true,
 	"exact_search":                  true,
 	"lang":                          true,
+	"source":                        true,
+	"contable_id":                   true,
+	"instructivo_id":                true,
+	"auditoria_id":                  true,
+	"consolidado_id":                true,
+	"cuenta_id":                     true,
+	"legislacion_id":                true,
+	"tool_search_cgr":               true,
 	"tool_search_cgr_dictamenes":    true,
 	"tool_get_cgr_dictamen":         true,
+	"tool_get_cgr_instructivo":      true,
+	"tool_get_cgr_contable":         true,
+	"tool_get_cgr_auditoria":        true,
+	"tool_get_cgr_consolidado":      true,
+	"tool_get_cgr_cuenta":           true,
+	"tool_get_cgr_legislacion":      true,
 	"tool_count_cgr_jurisprudencia": true,
 }
 
@@ -55,8 +97,15 @@ func loadFromBytes(data []byte) (*PromptSet, error) {
 
 func toolVars() map[string]string {
 	return map[string]string{
+		"tool_search_cgr":               toolSearchCgr,
 		"tool_search_cgr_dictamenes":    toolSearchCgrDictamenes,
 		"tool_get_cgr_dictamen":         toolGetCgrDictamen,
+		"tool_get_cgr_instructivo":      toolGetCgrInstructivo,
+		"tool_get_cgr_contable":         toolGetCgrContable,
+		"tool_get_cgr_auditoria":        toolGetCgrAuditoria,
+		"tool_get_cgr_consolidado":      toolGetCgrConsolidado,
+		"tool_get_cgr_cuenta":           toolGetCgrCuenta,
+		"tool_get_cgr_legislacion":      toolGetCgrLegislacion,
 		"tool_count_cgr_jurisprudencia": toolCountCgrJurisprudencia,
 	}
 }
@@ -80,9 +129,10 @@ func RegisterPrompts(srv *mcp.Server, ps *PromptSet) {
 	add(&mcp.Prompt{
 		Name:        "search_jurisprudence",
 		Title:       "Find Contraloría jurisprudence",
-		Description: "Find Contraloría dictámenes: explore counts, search paginated, and read the full document with citation.",
+		Description: "Find Contraloría jurisprudence across all sources: explore counts, search paginated, and read the full document with citation.",
 		Arguments: []*mcp.PromptArgument{
 			{Name: "query", Title: "Query", Description: "Search text, e.g. quillota or bono", Required: true},
+			{Name: "source", Title: "Source", Description: "Source: dictamenes, instructivos, contable, auditoria, consolidados, cuentas, legislacion, web, todos (default dictamenes)", Required: false},
 			{Name: "order", Title: "Order", Description: "Order: date (newest), dateasc (oldest), score (relevance)", Required: false},
 			{Name: "exact_search", Title: "Exact search", Description: "Exact match (true/false)", Required: false},
 			{Name: "lang", Title: "Language", Description: "Response language (e.g. es, en, pt); default Spanish if not specified", Required: false},
@@ -119,4 +169,34 @@ func RegisterPrompts(srv *mcp.Server, ps *PromptSet) {
 			{Name: "lang", Title: "Language", Description: "Response language (e.g. es, en, pt); default Spanish if not specified", Required: false},
 		},
 	}, "interpret_dictamen")
+
+	add(&mcp.Prompt{
+		Name:        "analyze_contable_instructivo",
+		Title:       "Analyze contable dictamen or instructivo",
+		Description: "Analyze a contable dictamen (OFE/E) or instructivo (IN): normativa contable, parte/materia and texto, citing url/pdf_url.",
+		Arguments: []*mcp.PromptArgument{
+			{Name: "contable_id", Title: "Contable id", Description: "Contable id (e.g. E080961 or OFE...), optional if instructivo_id provided", Required: false},
+			{Name: "instructivo_id", Title: "Instructivo id", Description: "Instructivo id (e.g. IN23...), optional if contable_id provided", Required: false},
+			{Name: "lang", Title: "Language", Description: "Response language (e.g. es, en, pt); default Spanish if not specified", Required: false},
+		},
+	}, "analyze_contable_instructivo")
+
+	add(&mcp.Prompt{
+		Name:        "analyze_auditoria_consolidado",
+		Title:       "Analyze auditoría or consolidado",
+		Description: "Analyze an auditoría Informe Final or consolidado CIC: resena/contenido_extraido (truncated), pdf link and fiscalizacion method.",
+		Arguments: []*mcp.PromptArgument{
+			{Name: "auditoria_id", Title: "Auditoría id", Description: "Auditoría id (e.g. 123/2024 or E...N...), optional if consolidado_id provided", Required: false},
+			{Name: "consolidado_id", Title: "Consolidado id", Description: "Consolidado id (e.g. CIC21/2024), optional if auditoria_id provided", Required: false},
+			{Name: "lang", Title: "Language", Description: "Response language (e.g. es, en, pt); default Spanish if not specified", Required: false},
+		},
+	}, "analyze_auditoria_consolidado")
+
+	// Ensure alias vars are referenced so they are not flagged as unused.
+	_ = toolGetContable
+	_ = toolGetInstructivo
+	_ = toolGetAuditoria
+	_ = toolGetConsolidado
+	_ = toolGetCuenta
+	_ = toolGetLegislacion
 }

@@ -1,0 +1,33 @@
+{
+  "took": 10,
+  "timed_out": false,
+  "_shards": {"total": 23, "successful": 23, "skipped": 0, "failed": 0},
+  "hits": {
+    "total": {"value": 1, "relation": "eq"},
+    "max_score": 12.5,
+    "hits": [
+      {
+        "_index": "cgr-instructivos",
+        "_type": "_doc",
+        "_id": "IN23N26",
+        "_score": 15.2,
+        "_source": {
+          "doc_id": "IN23N26",
+          "n_dictamen": "IN23",
+          "numeric_doc_id": "IN23",
+          "fecha_documento": "2026-01-27T00:00:00+00:00",
+          "carácter": "NNN",
+          "materia": "Día funcionario municipal",
+          "descriptores": "Municipalidades, funcionarios, feriado",
+          "criterio": "Aplica jurisprudencia",
+          "origen_": "Contraloría General",
+          "destinatarios": "Municipalidades del país",
+          "abogados": "JPM",
+          "fuentes_legales": "ley 18883 art/99",
+          "documento_completo": "N° IN23 Fecha: 27-01-2026\nInstrucciones sobre día del funcionario municipal.\nSaluda atentamente a Ud.",
+          "old_url": "http://172.30.21.160/instructivos/IN23N26"
+        }
+      }
+    ]
+  }
+}

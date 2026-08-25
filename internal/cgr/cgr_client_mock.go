@@ -109,6 +109,270 @@ func (_c *MockCgrClient_CountJurisprudencia_Call) RunAndReturn(run func(ctx cont
 	return _c
 }
 
+// GetAuditoria provides a mock function for the type MockCgrClient
+func (_mock *MockCgrClient) GetAuditoria(ctx context.Context, auditoriaID string) (AuditoriaFull, error) {
+	ret := _mock.Called(ctx, auditoriaID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAuditoria")
+	}
+
+	var r0 AuditoriaFull
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (AuditoriaFull, error)); ok {
+		return returnFunc(ctx, auditoriaID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) AuditoriaFull); ok {
+		r0 = returnFunc(ctx, auditoriaID)
+	} else {
+		r0 = ret.Get(0).(AuditoriaFull)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, auditoriaID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCgrClient_GetAuditoria_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAuditoria'
+type MockCgrClient_GetAuditoria_Call struct {
+	*mock.Call
+}
+
+// GetAuditoria is a helper method to define mock.On call
+//   - ctx context.Context
+//   - auditoriaID string
+func (_e *MockCgrClient_Expecter) GetAuditoria(ctx any, auditoriaID any) *MockCgrClient_GetAuditoria_Call {
+	return &MockCgrClient_GetAuditoria_Call{Call: _e.mock.On("GetAuditoria", ctx, auditoriaID)}
+}
+
+func (_c *MockCgrClient_GetAuditoria_Call) Run(run func(ctx context.Context, auditoriaID string)) *MockCgrClient_GetAuditoria_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCgrClient_GetAuditoria_Call) Return(auditoriaFull AuditoriaFull, err error) *MockCgrClient_GetAuditoria_Call {
+	_c.Call.Return(auditoriaFull, err)
+	return _c
+}
+
+func (_c *MockCgrClient_GetAuditoria_Call) RunAndReturn(run func(ctx context.Context, auditoriaID string) (AuditoriaFull, error)) *MockCgrClient_GetAuditoria_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetConsolidado provides a mock function for the type MockCgrClient
+func (_mock *MockCgrClient) GetConsolidado(ctx context.Context, consolidadoID string) (ConsolidadoFull, error) {
+	ret := _mock.Called(ctx, consolidadoID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetConsolidado")
+	}
+
+	var r0 ConsolidadoFull
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (ConsolidadoFull, error)); ok {
+		return returnFunc(ctx, consolidadoID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ConsolidadoFull); ok {
+		r0 = returnFunc(ctx, consolidadoID)
+	} else {
+		r0 = ret.Get(0).(ConsolidadoFull)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, consolidadoID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCgrClient_GetConsolidado_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetConsolidado'
+type MockCgrClient_GetConsolidado_Call struct {
+	*mock.Call
+}
+
+// GetConsolidado is a helper method to define mock.On call
+//   - ctx context.Context
+//   - consolidadoID string
+func (_e *MockCgrClient_Expecter) GetConsolidado(ctx any, consolidadoID any) *MockCgrClient_GetConsolidado_Call {
+	return &MockCgrClient_GetConsolidado_Call{Call: _e.mock.On("GetConsolidado", ctx, consolidadoID)}
+}
+
+func (_c *MockCgrClient_GetConsolidado_Call) Run(run func(ctx context.Context, consolidadoID string)) *MockCgrClient_GetConsolidado_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCgrClient_GetConsolidado_Call) Return(consolidadoFull ConsolidadoFull, err error) *MockCgrClient_GetConsolidado_Call {
+	_c.Call.Return(consolidadoFull, err)
+	return _c
+}
+
+func (_c *MockCgrClient_GetConsolidado_Call) RunAndReturn(run func(ctx context.Context, consolidadoID string) (ConsolidadoFull, error)) *MockCgrClient_GetConsolidado_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetContable provides a mock function for the type MockCgrClient
+func (_mock *MockCgrClient) GetContable(ctx context.Context, contableID string) (ContableFull, error) {
+	ret := _mock.Called(ctx, contableID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetContable")
+	}
+
+	var r0 ContableFull
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (ContableFull, error)); ok {
+		return returnFunc(ctx, contableID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) ContableFull); ok {
+		r0 = returnFunc(ctx, contableID)
+	} else {
+		r0 = ret.Get(0).(ContableFull)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, contableID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCgrClient_GetContable_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetContable'
+type MockCgrClient_GetContable_Call struct {
+	*mock.Call
+}
+
+// GetContable is a helper method to define mock.On call
+//   - ctx context.Context
+//   - contableID string
+func (_e *MockCgrClient_Expecter) GetContable(ctx any, contableID any) *MockCgrClient_GetContable_Call {
+	return &MockCgrClient_GetContable_Call{Call: _e.mock.On("GetContable", ctx, contableID)}
+}
+
+func (_c *MockCgrClient_GetContable_Call) Run(run func(ctx context.Context, contableID string)) *MockCgrClient_GetContable_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCgrClient_GetContable_Call) Return(contableFull ContableFull, err error) *MockCgrClient_GetContable_Call {
+	_c.Call.Return(contableFull, err)
+	return _c
+}
+
+func (_c *MockCgrClient_GetContable_Call) RunAndReturn(run func(ctx context.Context, contableID string) (ContableFull, error)) *MockCgrClient_GetContable_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetCuenta provides a mock function for the type MockCgrClient
+func (_mock *MockCgrClient) GetCuenta(ctx context.Context, cuentaID string) (CuentaFull, error) {
+	ret := _mock.Called(ctx, cuentaID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetCuenta")
+	}
+
+	var r0 CuentaFull
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (CuentaFull, error)); ok {
+		return returnFunc(ctx, cuentaID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) CuentaFull); ok {
+		r0 = returnFunc(ctx, cuentaID)
+	} else {
+		r0 = ret.Get(0).(CuentaFull)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, cuentaID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCgrClient_GetCuenta_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetCuenta'
+type MockCgrClient_GetCuenta_Call struct {
+	*mock.Call
+}
+
+// GetCuenta is a helper method to define mock.On call
+//   - ctx context.Context
+//   - cuentaID string
+func (_e *MockCgrClient_Expecter) GetCuenta(ctx any, cuentaID any) *MockCgrClient_GetCuenta_Call {
+	return &MockCgrClient_GetCuenta_Call{Call: _e.mock.On("GetCuenta", ctx, cuentaID)}
+}
+
+func (_c *MockCgrClient_GetCuenta_Call) Run(run func(ctx context.Context, cuentaID string)) *MockCgrClient_GetCuenta_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCgrClient_GetCuenta_Call) Return(cuentaFull CuentaFull, err error) *MockCgrClient_GetCuenta_Call {
+	_c.Call.Return(cuentaFull, err)
+	return _c
+}
+
+func (_c *MockCgrClient_GetCuenta_Call) RunAndReturn(run func(ctx context.Context, cuentaID string) (CuentaFull, error)) *MockCgrClient_GetCuenta_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetDictamen provides a mock function for the type MockCgrClient
 func (_mock *MockCgrClient) GetDictamen(ctx context.Context, dictamenID string) (DictamenFull, error) {
 	ret := _mock.Called(ctx, dictamenID)
@@ -171,6 +435,204 @@ func (_c *MockCgrClient_GetDictamen_Call) Return(dictamenFull DictamenFull, err 
 }
 
 func (_c *MockCgrClient_GetDictamen_Call) RunAndReturn(run func(ctx context.Context, dictamenID string) (DictamenFull, error)) *MockCgrClient_GetDictamen_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetInstructivo provides a mock function for the type MockCgrClient
+func (_mock *MockCgrClient) GetInstructivo(ctx context.Context, instructivoID string) (InstructivoFull, error) {
+	ret := _mock.Called(ctx, instructivoID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInstructivo")
+	}
+
+	var r0 InstructivoFull
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (InstructivoFull, error)); ok {
+		return returnFunc(ctx, instructivoID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) InstructivoFull); ok {
+		r0 = returnFunc(ctx, instructivoID)
+	} else {
+		r0 = ret.Get(0).(InstructivoFull)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, instructivoID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCgrClient_GetInstructivo_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInstructivo'
+type MockCgrClient_GetInstructivo_Call struct {
+	*mock.Call
+}
+
+// GetInstructivo is a helper method to define mock.On call
+//   - ctx context.Context
+//   - instructivoID string
+func (_e *MockCgrClient_Expecter) GetInstructivo(ctx any, instructivoID any) *MockCgrClient_GetInstructivo_Call {
+	return &MockCgrClient_GetInstructivo_Call{Call: _e.mock.On("GetInstructivo", ctx, instructivoID)}
+}
+
+func (_c *MockCgrClient_GetInstructivo_Call) Run(run func(ctx context.Context, instructivoID string)) *MockCgrClient_GetInstructivo_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCgrClient_GetInstructivo_Call) Return(instructivoFull InstructivoFull, err error) *MockCgrClient_GetInstructivo_Call {
+	_c.Call.Return(instructivoFull, err)
+	return _c
+}
+
+func (_c *MockCgrClient_GetInstructivo_Call) RunAndReturn(run func(ctx context.Context, instructivoID string) (InstructivoFull, error)) *MockCgrClient_GetInstructivo_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetLegislacion provides a mock function for the type MockCgrClient
+func (_mock *MockCgrClient) GetLegislacion(ctx context.Context, legislacionID string) (LegislacionFull, error) {
+	ret := _mock.Called(ctx, legislacionID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetLegislacion")
+	}
+
+	var r0 LegislacionFull
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (LegislacionFull, error)); ok {
+		return returnFunc(ctx, legislacionID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) LegislacionFull); ok {
+		r0 = returnFunc(ctx, legislacionID)
+	} else {
+		r0 = ret.Get(0).(LegislacionFull)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, legislacionID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCgrClient_GetLegislacion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetLegislacion'
+type MockCgrClient_GetLegislacion_Call struct {
+	*mock.Call
+}
+
+// GetLegislacion is a helper method to define mock.On call
+//   - ctx context.Context
+//   - legislacionID string
+func (_e *MockCgrClient_Expecter) GetLegislacion(ctx any, legislacionID any) *MockCgrClient_GetLegislacion_Call {
+	return &MockCgrClient_GetLegislacion_Call{Call: _e.mock.On("GetLegislacion", ctx, legislacionID)}
+}
+
+func (_c *MockCgrClient_GetLegislacion_Call) Run(run func(ctx context.Context, legislacionID string)) *MockCgrClient_GetLegislacion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCgrClient_GetLegislacion_Call) Return(legislacionFull LegislacionFull, err error) *MockCgrClient_GetLegislacion_Call {
+	_c.Call.Return(legislacionFull, err)
+	return _c
+}
+
+func (_c *MockCgrClient_GetLegislacion_Call) RunAndReturn(run func(ctx context.Context, legislacionID string) (LegislacionFull, error)) *MockCgrClient_GetLegislacion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Search provides a mock function for the type MockCgrClient
+func (_mock *MockCgrClient) Search(ctx context.Context, params SearchParams) (SearchResponse, error) {
+	ret := _mock.Called(ctx, params)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Search")
+	}
+
+	var r0 SearchResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, SearchParams) (SearchResponse, error)); ok {
+		return returnFunc(ctx, params)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, SearchParams) SearchResponse); ok {
+		r0 = returnFunc(ctx, params)
+	} else {
+		r0 = ret.Get(0).(SearchResponse)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, SearchParams) error); ok {
+		r1 = returnFunc(ctx, params)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCgrClient_Search_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Search'
+type MockCgrClient_Search_Call struct {
+	*mock.Call
+}
+
+// Search is a helper method to define mock.On call
+//   - ctx context.Context
+//   - params SearchParams
+func (_e *MockCgrClient_Expecter) Search(ctx any, params any) *MockCgrClient_Search_Call {
+	return &MockCgrClient_Search_Call{Call: _e.mock.On("Search", ctx, params)}
+}
+
+func (_c *MockCgrClient_Search_Call) Run(run func(ctx context.Context, params SearchParams)) *MockCgrClient_Search_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 SearchParams
+		if args[1] != nil {
+			arg1 = args[1].(SearchParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCgrClient_Search_Call) Return(searchResponse SearchResponse, err error) *MockCgrClient_Search_Call {
+	_c.Call.Return(searchResponse, err)
+	return _c
+}
+
+func (_c *MockCgrClient_Search_Call) RunAndReturn(run func(ctx context.Context, params SearchParams) (SearchResponse, error)) *MockCgrClient_Search_Call {
 	_c.Call.Return(run)
 	return _c
 }

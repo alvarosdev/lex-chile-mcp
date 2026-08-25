@@ -1,0 +1,26 @@
+{
+  "took": 4,
+  "timed_out": false,
+  "_shards": {"total": 23, "successful": 23, "skipped": 0, "failed": 0},
+  "hits": {
+    "total": {"value": 11961, "relation": "eq"},
+    "max_score": null,
+    "hits": []
+  },
+  "aggregations": {
+    "count_by_type": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {"key": "legislacion", "doc_count": 9557},
+        {"key": "auditoria", "doc_count": 690},
+        {"key": "cuentas", "doc_count": 645},
+        {"key": "contable", "doc_count": 622},
+        {"key": "dictamenes", "doc_count": 312},
+        {"key": "web", "doc_count": 106},
+        {"key": "instructivos", "doc_count": 18},
+        {"key": "consolidados", "doc_count": 11}
+      ]
+    }
+  }
+}

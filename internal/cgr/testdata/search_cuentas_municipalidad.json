@@ -1,0 +1,29 @@
+{
+  "took": 10,
+  "timed_out": false,
+  "_shards": {"total": 23, "successful": 23, "skipped": 0, "failed": 0},
+  "hits": {
+    "total": {"value": 1, "relation": "eq"},
+    "max_score": 10.5,
+    "hits": [
+      {
+        "_index": "cgr-cuentas",
+        "_type": "_doc",
+        "_id": "2982331",
+        "_score": 13.2,
+        "_source": {
+          "doc_id": "2982331",
+          "numeric_doc_id": "2982331",
+          "numero_sentencia": "2982331",
+          "numero_expediente": "JC 39778",
+          "texto": "Juzgado de Cuentas sentencia contra alcalde Valparaíso por reparos municipales. Se condena al pago de perjuicios.",
+          "fecha_sentencia": "2026-03-13T00:00:00+00:00",
+          "fecha_documento": "2026-03-13T00:00:00+00:00",
+          "pdf": "https://www.contraloria.cl/buscadorpdf/cuentas/2982331/pdf",
+          "pdf2": "https://www.contraloria.cl/buscadorpdf/cuentas/2982331/pdf2",
+          "old_url": "http://172.30.21.160/cuentas/2982331"
+        }
+      }
+    ]
+  }
+}

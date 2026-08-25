@@ -1,0 +1,28 @@
+{
+  "took": 10,
+  "timed_out": false,
+  "_shards": {"total": 23, "successful": 23, "skipped": 0, "failed": 0},
+  "hits": {
+    "total": {"value": 1, "relation": "eq"},
+    "max_score": 13.0,
+    "hits": [
+      {
+        "_index": "cgr-consolidados",
+        "_type": "_doc",
+        "_id": "CIC21/2026",
+        "_score": 16.1,
+        "_source": {
+          "numero": "CIC21/2026",
+          "nombre": "Consolidado de Información Circularizada N°21/2026 sobre licencias médicas",
+          "resena": "Funcionarios con licencia médica que percibieron honorarios durante reposo",
+          "tipo": "Consolidado",
+          "fecha_documento": "2026-02-20T00:00:00+00:00",
+          "unidad_cgr": "División de Fiscalización",
+          "contenido_extraido": "Contenido extraído del PDF con datos de licencias médicas y honorarios.",
+          "documento_cic_pdf_web": "https://www.contraloria.cl/buscadorpdf/consolidados/CIC21_2026/pdf",
+          "old_url": "http://172.30.21.160/consolidados/CIC21"
+        }
+      }
+    ]
+  }
+}

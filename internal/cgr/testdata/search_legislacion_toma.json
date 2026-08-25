@@ -1,0 +1,30 @@
+{
+  "took": 10,
+  "timed_out": false,
+  "_shards": {"total": 23, "successful": 23, "skipped": 0, "failed": 0},
+  "hits": {
+    "total": {"value": 1, "relation": "eq"},
+    "max_score": 9.8,
+    "hits": [
+      {
+        "_index": "cgr-legislacion",
+        "_type": "_doc",
+        "_id": "RZA005691400",
+        "_score": 12.3,
+        "_source": {
+          "doc_id": "RZA005691400",
+          "numeric_doc_id": "569",
+          "tipo": "RESOLUCION",
+          "número": "569",
+          "organismo": "CONTRALORIA GENERAL DE LA REPUBLICA",
+          "materias": "Somete a toma de razón decretos materia personal",
+          "caracter": "AFECTO",
+          "fecha_documento": "2024-03-10T00:00:00+00:00",
+          "texto_": "Texto de la resolución 569 sobre toma de razón de decretos en materia de personal.",
+          "texto__raw": "<div>raw</div>",
+          "old_url": "http://172.30.21.160/legislacion/RZA005691400"
+        }
+      }
+    ]
+  }
+}

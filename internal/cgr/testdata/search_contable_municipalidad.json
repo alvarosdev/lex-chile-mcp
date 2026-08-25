@@ -1,0 +1,30 @@
+{
+  "took": 10,
+  "timed_out": false,
+  "_shards": {"total": 23, "successful": 23, "skipped": 0, "failed": 0},
+  "hits": {
+    "total": {"value": 1, "relation": "eq"},
+    "max_score": 11.2,
+    "hits": [
+      {
+        "_index": "cgr-contable",
+        "_type": "_doc",
+        "_id": "E080961",
+        "_score": 14.0,
+        "_source": {
+          "doc_id": "E080961N26",
+          "número": "E080961",
+          "normativa_contable": "OFE0809612600",
+          "tipo": "Oficio",
+          "parte": "Municipalidad de La Pintana deberá dar cumplimiento al oficio N°24.377 de 2025 sobre transferencias",
+          "destinatarios": "Alcalde de La Pintana",
+          "origen": "División de Contabilidad y Finanzas Públicas",
+          "fecha_documento": "2026-01-15T00:00:00+00:00",
+          "texto": "Texto del oficio contable sobre contabilización de transferencias municipales. Se instruye registro contable conforme NICSP-CGR.",
+          "texto_raw": "<div>raw</div>",
+          "old_url": "http://172.30.21.160/contable/E080961"
+        }
+      }
+    ]
+  }
+}
