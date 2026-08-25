@@ -1,14 +1,15 @@
 # Curated MCP prompts — baked into the binary via go:embed (CGR).
 prompts:
   search_jurisprudence: |
-    Find Contraloría jurisprudence about {{.query}}.{{if .lang}} Respond in {{.lang}}.{{else}} Respond in the user's language (default Spanish).{{end}}
+    Find Contraloría jurisprudence about {{.query}}.{{if .source}} Source: {{.source}}.{{end}}{{if .lang}} Respond in {{.lang}}.{{else}} Respond in the user's language (default Spanish).{{end}}
 
     MCP is the source of truth — do NOT assume legal content beyond the tool output. Treat dictámenes as technical-legal acts, not political. Hierarchy: Constitución > ley/reglamento > dictamen (dictamen is subordinate interpretation, not autonomous law). Avoid bias: focus on legality, not political consequences; separate message from messenger; beware interested readings; distinguish fact vs opinion. For deep method, see interpret_dictamen.
+    Source table: dictamenes=dictamen case law (E...N...), instructivos=general instruction IN23, contable=NICSP/OFE contable (E/OFE...), auditoria=Informe Final (heaviest, 10k+), consolidados=CIC21, cuentas=sentencia (numeric), legislacion=AFECTO (RZA/FRA), web=context only, todos=all.
+    Step 1 (optional): call {{.tool_count_cgr_jurisprudencia}}(query="{{.query}}"{{if .exact_search}}, exact_search={{.exact_search}}{{end}}) to explore how many results exist per type (dictamenes, auditoria, legislacion, contable, etc.). If it times out or circuit breaker is open, skip to Step 2 and use {{.tool_search_cgr}} directly.
+    Step 2: call {{.tool_search_cgr}}(query="{{.query}}"{{if .source}}, source="{{.source}}"{{else}}, source="dictamenes"{{end}}{{if .exact_search}}, exact_search={{.exact_search}}{{end}}{{if .order}}, order="{{.order}}"{{end}}) — 20 per page, order date (newest), dateasc (oldest) or score (relevance); hint: use order="score" if total>500 else order="date". Pacing 3-4s between calls. Alias: {{.tool_search_cgr_dictamenes}}(query="{{.query}}") for dictamenes (default dictamenes for compat).
+    Step 3: pick the most relevant result per bucket and call the typed getter: {{.tool_get_cgr_dictamen}}(dictamen_id=...) for dictamenes, {{.tool_get_cgr_instructivo}}(instructivo_id=...) for instructivos, {{.tool_get_cgr_contable}}(contable_id=...) for contable, {{.tool_get_cgr_auditoria}}(auditoria_id=...) for auditoria, {{.tool_get_cgr_consolidado}}(consolidado_id=...) for consolidados, {{.tool_get_cgr_cuenta}}(cuenta_id=...) for cuentas, {{.tool_get_cgr_legislacion}}(legislacion_id=...) for legislacion. Cite url and pdf_url (or documento_cic_pdf_web for consolidados) for every claim. NEVER invent IDs or content — verify against the returned documento_completo/contenido.
     Respond in {{if .lang}}{{.lang}}{{else}}the user's language (default Spanish){{end}}.
-
-    Step 1: call {{.tool_count_cgr_jurisprudencia}}(query="{{.query}}"{{if .exact_search}}, exact_search={{.exact_search}}{{end}}) to explore how many results exist per type (dictamenes, auditoria, legislacion).
-    Step 2: call {{.tool_search_cgr_dictamenes}}(query="{{.query}}"{{if .exact_search}}, exact_search={{.exact_search}}{{end}}{{if .order}}, order="{{.order}}"{{end}}) — 20 per page, order date (newest), dateasc (oldest) or score (relevance).
-    Step 3: pick the most relevant result and call {{.tool_get_cgr_dictamen}}(dictamen_id=...) to read the full document. Cite url and pdf_url for every claim. NEVER invent dictamen_id or content — verify against the returned documento_completo.
+    Must include disclaimer: this is general information, not legal advice, just an information source; AI interpretation may vary between models and providers. Anti-bias: refer to interpret_dictamen for method.
 
   analyze_dictamen: |
     Analyze Contraloría dictamen {{.dictamen_id}}.{{if .lang}} Respond in {{.lang}}.{{else}} Respond in the user's language (default Spanish).{{end}}
@@ -16,7 +17,7 @@ prompts:
     MCP is the source of truth — verify every claim against get_cgr_dictamen output. Hierarchy Constitución > ley/reglamento > dictamen. Avoid bias as in interpret_dictamen.
     Respond in {{if .lang}}{{.lang}}{{else}}the user's language (default Spanish){{end}}.
 
-    Step 1: call {{.tool_get_cgr_dictamen}}(dictamen_id={{.dictamen_id}}) and read materia, descriptores, criterio, origen, fuentes_legales and documento_completo.
+    Step 1: call {{.tool_get_cgr_dictamen}}(dictamen_id="{{.dictamen_id}}") and read materia, descriptores, criterio, origen, fuentes_legales and documento_completo.
     Step 2: structure the analysis: materia, descriptores, criterio, origen, fuentes legales, and document summary, citing url and pdf_url per claim.
     Interpret conditionally: "conforme al texto retornado ... podría interpretarse como ..." This is general information, not legal advice, just an information source; AI interpretation may vary between models and providers. Verify at contraloria.cl/buscadorpdf/dictamenes/{{.dictamen_id}}/html.
 
@@ -24,7 +25,7 @@ prompts:
     Explain Contraloría dictamen {{.dictamen_id}} in plain language.{{if .audience}} Audience: {{.audience}}.{{end}}{{if .lang}} Respond in {{.lang}}.{{else}} Respond in the user's language (default Spanish).{{end}}
 
     MCP is the source of truth. Respond in {{if .lang}}{{.lang}}{{else}}the user's language (default Spanish){{end}}.
-    Call {{.tool_get_cgr_dictamen}}(dictamen_id={{.dictamen_id}}) and paraphrase documento_completo without legal jargon.
+    Call {{.tool_get_cgr_dictamen}}(dictamen_id="{{.dictamen_id}}") and paraphrase documento_completo without legal jargon.
     Cite url and pdf_url. End with: not legal advice, just an information source; AI interpretation may vary between models and providers.
     For deep method, see interpret_dictamen.
 
@@ -36,4 +37,24 @@ prompts:
     Nature: dictamen is a mandatory legal report that creates binding administrative jurisprudence, does not create law, and is challengeable before courts. Hierarchy: Constitución > ley/reglamento > dictamen — dictamen is subordinate interpretation, not autonomous law.
     Method (4 steps): 1) Identify the legal problem (what consultation triggered it). 2) Isolate applicable norms (laws, regulations, Constitution cited). 3) Analyze the reasoning (how facts link to norms). 4) Examine the resolutive part (what is ordered/prohibited/allowed and its practical effect).
     Anti-bias: do not confuse what with why; separate message from messenger (CGR is autonomous, constitutional rank); beware interested readings; distinguish fact vs opinion; contrast always with the original text at url/pdf_url.
-    Call {{.tool_get_cgr_dictamen}}(dictamen_id={{.dictamen_id}}) and apply the method, citing url and pdf_url per claim. This is general information, not legal advice, just an information source; AI interpretation may vary between models and providers. Verify at contraloria.cl/buscadorpdf/dictamenes/{{.dictamen_id}}/html and the PDF at contraloria.cl/buscadorpdf/dictamenes/{{.dictamen_id}}/pdf.
+    Call {{.tool_get_cgr_dictamen}}(dictamen_id="{{.dictamen_id}}") and apply the method, citing url and pdf_url per claim. This is general information, not legal advice, just an information source; AI interpretation may vary between models and providers. Verify at contraloria.cl/buscadorpdf/dictamenes/{{.dictamen_id}}/html and the PDF at contraloria.cl/buscadorpdf/dictamenes/{{.dictamen_id}}/pdf.
+
+  analyze_contable_instructivo: |
+    Analyze contable {{.contable_id}} or instructivo {{.instructivo_id}}.{{if .lang}} Respond in {{.lang}}.{{else}} Respond in the user's language (default Spanish).{{end}}
+
+    MCP is the source of truth — verify every claim against tool output. Hierarchy Constitución > ley/reglamento > dictamen/instructivo. For method, see interpret_dictamen.
+    Respond in {{if .lang}}{{.lang}}{{else}}the user's language (default Spanish){{end}}.
+
+    Step 1: call {{.tool_get_cgr_contable}}(contable_id="{{.contable_id}}") if contable_id is provided, or {{.tool_get_cgr_instructivo}}(instructivo_id="{{.instructivo_id}}") if instructivo_id is provided, and read parte/materia, normativa_contable, texto and documento_completo. Do NOT expose texto_raw or internal URLs (old_url, 172.30.x).
+    Step 2: structure the analysis: parte/materia, normativa_contable, texto summary, and document metadata, citing url and pdf_url per claim. If contable, highlight NICSP/OFE context (E/OFE...); if instructivo, highlight general instruction scope (IN...).
+    Interpret conditionally: "conforme al texto retornado ... podría interpretarse como ..." This is general information, not legal advice, just an information source; AI interpretation may vary between models and providers. Verify at url/pdf_url.
+
+  analyze_auditoria_consolidado: |
+    Analyze auditoria {{.auditoria_id}} or consolidado {{.consolidado_id}}.{{if .lang}} Respond in {{.lang}}.{{else}} Respond in the user's language (default Spanish).{{end}}
+
+    MCP is the source of truth — verify every claim against tool output. For method, see interpret_dictamen.
+    Respond in {{if .lang}}{{.lang}}{{else}}the user's language (default Spanish){{end}}.
+
+    Step 1: call {{.tool_get_cgr_auditoria}}(auditoria_id="{{.auditoria_id}}") or {{.tool_get_cgr_consolidado}}(consolidado_id="{{.consolidado_id}}") and read resena, contenido_extraido (may be truncated at 30k chars with notice + pdf link), objetivo, conclusiones, plus pdf or documento_cic_pdf_web.
+    Step 2: structure the analysis: resena/contenido_extraido summary (note if truncated, point to pdf/documento_cic_pdf_web), objetivo, conclusiones, and fiscalizacion context, citing url/pdf_url/documento_cic_pdf_web per claim. Do NOT expose internal URLs (old_url, 172.30.x).
+    Interpret conditionally: "conforme al texto retornado ... podría interpretarse como ..." This is general information, not legal advice, just an information source; AI interpretation may vary between models and providers. Verify at url/pdf_url.

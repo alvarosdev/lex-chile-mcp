@@ -3,6 +3,7 @@ package tools
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -53,9 +54,13 @@ func (s *SearchCgrSuite) callTool(args map[string]any) (*mcp.CallToolResult, err
 	return s.session.CallTool(s.ctx, &mcp.CallToolParams{Name: "search_cgr_dictamenes", Arguments: args})
 }
 
+func (s *SearchCgrSuite) callGeneric(args map[string]any) (*mcp.CallToolResult, error) {
+	return s.session.CallTool(s.ctx, &mcp.CallToolParams{Name: "search_cgr", Arguments: args})
+}
+
 func (s *SearchCgrSuite) TestSearchSuccess() {
-	s.cgrClient.EXPECT().SearchDictamenes(mock.Anything, cgr.SearchParams{
-		Query: "quillota", ExactSearch: false, Order: "date", Page: 1,
+	s.cgrClient.EXPECT().Search(mock.Anything, cgr.SearchParams{
+		Query: "quillota", ExactSearch: false, Order: "date", Page: 1, Source: "dictamenes",
 	}).Return(cgr.SearchResponse{
 		Results: []cgr.DictamenSummary{{
 			DictamenID: "OF80660N26", NDictamen: "OF80660", FechaDoc: "2026-04-27",
@@ -85,10 +90,93 @@ func (s *SearchCgrSuite) TestSearchInvalidOrder() {
 }
 
 func (s *SearchCgrSuite) TestSearchClientError() {
-	s.cgrClient.EXPECT().SearchDictamenes(mock.Anything, mock.Anything).Return(cgr.SearchResponse{}, errors.New("upstream")).Once()
+	s.cgrClient.EXPECT().Search(mock.Anything, mock.Anything).Return(cgr.SearchResponse{}, errors.New("upstream")).Once()
 	res, err := s.callTool(map[string]any{"query": "x"})
 	s.Require().NoError(err)
 	s.True(res.IsError)
+}
+
+func (s *SearchCgrSuite) TestSearch_InvalidSource_NoIO() {
+	// invalid source must be rejected without calling client.Search
+	res, err := s.callGeneric(map[string]any{"query": "x", "source": "../count/todos"})
+	s.Require().NoError(err)
+	s.True(res.IsError)
+	s.Contains(res.Content[0].(*mcp.TextContent).Text, "invalid source")
+	s.cgrClient.AssertNotCalled(s.T(), "Search", mock.Anything, mock.Anything)
+
+	res, err = s.callGeneric(map[string]any{"query": "x", "source": "web%2fadmin"})
+	s.Require().NoError(err)
+	s.True(res.IsError)
+	s.Contains(res.Content[0].(*mcp.TextContent).Text, "invalid source")
+	s.cgrClient.AssertNotCalled(s.T(), "Search", mock.Anything, mock.Anything)
+
+	res, err = s.callGeneric(map[string]any{"query": "x", "source": "invalido"})
+	s.Require().NoError(err)
+	s.True(res.IsError)
+	s.Contains(res.Content[0].(*mcp.TextContent).Text, "invalid source")
+	s.cgrClient.AssertNotCalled(s.T(), "Search", mock.Anything, mock.Anything)
+
+	// case-insensitive valid source should succeed (mock expectation)
+	s.cgrClient.EXPECT().Search(mock.Anything, cgr.SearchParams{Query: "x", Order: "date", Page: 1, Source: "contable"}).Return(cgr.SearchResponse{
+		Results: []cgr.DictamenSummary{}, Pagination: cgr.Pagination{Total: 0, Page: 1, PageSize: 20},
+	}, nil).Once()
+	res, err = s.callGeneric(map[string]any{"query": "x", "source": "Contable"})
+	s.Require().NoError(err)
+	s.False(res.IsError)
+}
+
+func (s *SearchCgrSuite) TestSearch_PageOverflow() {
+	res, err := s.callGeneric(map[string]any{"query": "x", "page": 501})
+	s.Require().NoError(err)
+	s.True(res.IsError)
+	s.Contains(res.Content[0].(*mcp.TextContent).Text, "page must be <= 500")
+	s.cgrClient.AssertNotCalled(s.T(), "Search", mock.Anything, mock.Anything)
+
+	res, err = s.callGeneric(map[string]any{"query": "x", "page": 9999})
+	s.Require().NoError(err)
+	s.True(res.IsError)
+	s.Contains(res.Content[0].(*mcp.TextContent).Text, "page must be <= 500")
+	s.cgrClient.AssertNotCalled(s.T(), "Search", mock.Anything, mock.Anything)
+
+	s.cgrClient.EXPECT().Search(mock.Anything, cgr.SearchParams{Query: "x", Order: "date", Page: 1, Source: "dictamenes"}).Return(cgr.SearchResponse{
+		Results: []cgr.DictamenSummary{}, Pagination: cgr.Pagination{Total: 0, Page: 1, PageSize: 20},
+	}, nil).Once()
+	res, err = s.callGeneric(map[string]any{"query": "x", "page": 0})
+	s.Require().NoError(err)
+	s.False(res.IsError)
+}
+
+func (s *SearchCgrSuite) TestSearch_QueryTruncated() {
+	long := strings.Repeat("a", 800)
+	truncated := strings.Repeat("a", 500)
+	s.cgrClient.EXPECT().Search(mock.Anything, cgr.SearchParams{Query: truncated, Order: "date", Page: 1, Source: "dictamenes"}).Return(cgr.SearchResponse{
+		Results: []cgr.DictamenSummary{}, Pagination: cgr.Pagination{Total: 0, Page: 1, PageSize: 20},
+	}, nil).Once()
+	res, err := s.callGeneric(map[string]any{"query": long})
+	s.Require().NoError(err)
+	s.False(res.IsError)
+}
+
+func (s *SearchCgrSuite) TestSearch_SourceEnum() {
+	sources := []string{"dictamenes", "instructivos", "contable", "auditoria", "legislacion", "cuentas", "consolidados", "web", "todos"}
+	for _, src := range sources {
+		s.cgrClient.EXPECT().Search(mock.Anything, cgr.SearchParams{Query: "municipalidad", Order: "date", Page: 1, Source: src}).Return(cgr.SearchResponse{
+			Results:    []cgr.DictamenSummary{{DictamenID: "ID", Materia: "m", URL: "https://example.com", PDFURL: "https://example.com/pdf"}},
+			Pagination: cgr.Pagination{Total: 1, Page: 1, PageSize: 20, TotalPages: 1, HasMore: false},
+		}, nil).Once()
+		res, err := s.callGeneric(map[string]any{"query": "municipalidad", "source": src})
+		s.Require().NoError(err)
+		s.False(res.IsError, "source %s should be valid", src)
+	}
+}
+
+func (s *SearchCgrSuite) TestSearch_SourceWithTrimAndLower() {
+	s.cgrClient.EXPECT().Search(mock.Anything, cgr.SearchParams{Query: "x", Order: "date", Page: 1, Source: "contable"}).Return(cgr.SearchResponse{
+		Results: []cgr.DictamenSummary{}, Pagination: cgr.Pagination{Total: 0, Page: 1, PageSize: 20},
+	}, nil).Once()
+	res, err := s.callGeneric(map[string]any{"query": "x", "source": "  CONTABLE  "})
+	s.Require().NoError(err)
+	s.False(res.IsError)
 }
 
 // GetCgrSuite

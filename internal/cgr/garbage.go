@@ -34,3 +34,14 @@ var zeroWidthChars = []rune{zeroWidthSpaceRune, bomRune}
 // resumenTagRe matches the XML wrapper that sometimes surrounds resumen-like
 // fields — kept for parity with bcn, though CGR documento_completo is plain.
 var resumenTagRe = regexp.MustCompile(`(?i)</?resumen[^>]*>`)
+
+// tagRe strips any HTML/XML tag (e.g. <font>, <td>, <ul><li>).
+var tagRe = regexp.MustCompile(`<[^>]+>`)
+
+// xmlHeaderRe strips the XML prolog that prefixes auditoria contenido_pdf
+// (e.g. <?xml version="1.0" encoding="UTF-8"?>).
+var xmlHeaderRe = regexp.MustCompile(`(?i)<\?xml[^>]*\?>`)
+
+// pdfMetaRe strips the pdf:PDFVersion meta tag that appears in auditoria
+// contenido_pdf headers (e.g. <meta name="pdf:PDFVersion" content="1.4"/>).
+var pdfMetaRe = regexp.MustCompile(`(?i)<meta[^>]*pdf:[^>]*>`)
