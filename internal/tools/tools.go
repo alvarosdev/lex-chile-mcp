@@ -19,8 +19,15 @@ func RegisterTools(srv *mcp.Server, client bcn.LawClient) {
 
 // RegisterCgrTools registers all CGR tools on the MCP server.
 func RegisterCgrTools(srv *mcp.Server, client cgr.CgrClient) {
+	RegisterSearchCgr(srv, client)
 	RegisterSearchCgrDictamenes(srv, client)
 	RegisterGetCgrDictamen(srv, client)
+	RegisterGetCgrInstructivo(srv, client)
+	RegisterGetCgrContable(srv, client)
+	RegisterGetCgrAuditoria(srv, client)
+	RegisterGetCgrConsolidado(srv, client)
+	RegisterGetCgrCuenta(srv, client)
+	RegisterGetCgrLegislacion(srv, client)
 	RegisterCountCgrJurisprudencia(srv, client)
 }
 

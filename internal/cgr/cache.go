@@ -9,6 +9,13 @@ import (
 // lifetime. On overflow the LEAST recently used entry is evicted.
 const cacheMax = 100
 
+// cacheMaxLight is used for light families (contable, instructivos, consolidados, cuentas, dictamenes).
+const cacheMaxLight = 100
+
+// cacheMaxHeavy is used for heavy families (auditoria, legislacion) to avoid
+// filling the LRU with large payloads.
+const cacheMaxHeavy = 20
+
 // lruCache is an in-memory LRU cache keyed by a caller-defined string.
 // Safe for concurrent use. Duplicated from bcn etagCache but without ETag
 // — CGR does not send ETag/304.
@@ -16,6 +23,7 @@ type lruCache[T any] struct {
 	mu      sync.Mutex
 	entries map[string]*list.Element
 	order   *list.List // front = most recently used
+	max     int
 }
 
 type cacheItem[T any] struct {
@@ -24,9 +32,17 @@ type cacheItem[T any] struct {
 }
 
 func newLRUCache[T any]() *lruCache[T] {
+	return newLRUCacheWithMax[T](cacheMax)
+}
+
+func newLRUCacheWithMax[T any](max int) *lruCache[T] {
+	if max <= 0 {
+		max = cacheMax
+	}
 	return &lruCache[T]{
 		entries: make(map[string]*list.Element),
 		order:   list.New(),
+		max:     max,
 	}
 }
 
@@ -50,10 +66,12 @@ func (c *lruCache[T]) put(key string, value T) {
 		c.order.MoveToFront(el)
 		return
 	}
-	if len(c.entries) >= cacheMax {
+	if len(c.entries) >= c.max {
 		back := c.order.Back()
-		delete(c.entries, back.Value.(*cacheItem[T]).key)
-		c.order.Remove(back)
+		if back != nil {
+			delete(c.entries, back.Value.(*cacheItem[T]).key)
+			c.order.Remove(back)
+		}
 	}
 	c.entries[key] = c.order.PushFront(&cacheItem[T]{key: key, value: value})
 }

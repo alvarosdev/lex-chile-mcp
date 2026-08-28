@@ -1,0 +1,32 @@
+{
+  "took": 10,
+  "timed_out": false,
+  "_shards": {"total": 23, "successful": 23, "skipped": 0, "failed": 0},
+  "hits": {
+    "total": {"value": 1, "relation": "eq"},
+    "max_score": 18.4,
+    "hits": [
+      {
+        "_index": "cgr-auditoria",
+        "_type": "_doc",
+        "_id": "371/2026",
+        "_score": 20.1,
+        "_source": {
+          "doc_id": "371N26",
+          "numeric_doc_id": "371",
+          "número": "371/2026",
+          "nombre": "INFORME FINAL JUZGADO DE GARANTIA DE QUILLOTA",
+          "tipo": "Informe Final",
+          "objetivo": "Auditar cuenta corriente Banco Estado Juzgado Quillota",
+          "conclusiones": "Corresponde aprobar el movimiento de la cuenta corriente.",
+          "contenido_pdf": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><html xmlns=\"http://www.w3.org/1999/xhtml\"><meta name=\"pdf:PDFVersion\" content=\"1.7\"/>Contenido PDF del informe de auditoría 371/2026 con detalle de cuenta corriente del Juzgado de Garantía de Quillota.",
+          "pdf": "https://www.contraloria.cl/buscadorpdf/auditoria/371_2026/pdf",
+          "destinatarios": "<ul><li>PRESIDENTA CORTE SUPREMA</li></ul>",
+          "unidad_cgr": "Contraloría Regional Valparaíso",
+          "fecha_documento": "2026-03-15T00:00:00+00:00",
+          "old_url": "http://172.30.21.160/auditoria/371"
+        }
+      }
+    ]
+  }
+}

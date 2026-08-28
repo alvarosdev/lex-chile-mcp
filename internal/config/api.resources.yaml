@@ -47,9 +47,9 @@ resources:
 
   cgr_search:
     url: https://www.contraloria.cl
-    path: /apibusca/search/dictamenes
+    path: /apibusca/search
     method: POST
-    timeout: 10s
+    timeout: 12s
     retry:
       attempts: 3
       backoff: 500ms
@@ -60,7 +60,7 @@ resources:
       reset_timeout: 30s
   cgr_count:
     url: https://www.contraloria.cl
-    path: /apibusca/count/dictamenes
+    path: /apibusca/count/todos
     method: POST
     timeout: 10s
     retry:
