@@ -3,47 +3,76 @@ schema: spec-driven
 # Project context — shown to the AI when creating artifacts.
 # These conventions are inherited by every future change.
 context: |
-  Tech stack: Go 1.26. MCP server con modelcontextprotocol/go-sdk v1.7.0 (stdio + streamable
-  HTTP, misma instancia para ambos transportes). Cliente HTTP resty v3 (módulo resty.dev/v3,
-  v3.0.0-rc.3) con un *resty.Client por recurso (breaker count-based built-in + retry per-request
-  declarado en el YAML). html-to-markdown v2 (plugins base+commonmark+table). yaml.v3 para el
-  contrato de endpoints. Testify (suite) + mockery v3 (template testify, mocks generados al lado
-  del archivo productivo con nombres snake_case).
-  Dominio: búsqueda y recuperación de normas jurídicas chilenas (leyes, decretos, resoluciones)
-  desde los servicios de LeyChile / Biblioteca del Congreso Nacional (BCN).
-  Debes actuar como un desarrollador Senior de Go con experiencia en MCP. Por lo tanto antes de
-  definir cualquier artefacto, debes asegurarte de que la propuesta sea consistente con el contexto del
-  proyecto y las convenciones de desarrollo. Si no lo es, debes corregir la propuesta
-  antes de continuar.
+  LANGUAGE POLICY (governs reasoning, artifacts, code and execution):
+  - Work in English. All reasoning, planning and every OpenSpec artifact
+    (proposal, specs, design, tasks) are written in English. Specs created
+    before this policy may still be in Spanish — do not copy that style; new
+    artifacts are English-only.
+  - Code, identifiers, filenames and code comments are in English.
+  - Spanglish is allowed where the domain demands it: Chilean legal nouns with
+    no clean English equivalent stay in Spanish inside otherwise-English names
+    (e.g. search_cgr_dictamenes, get_cgr_instructivo,
+    count_cgr_jurisprudencia). Verbs and structure are English; only the
+    domain noun stays Spanish.
+  - Raw domain data stays untouched: legal text is Spanish, BCN/CGR response
+    fields and API parameter names (idNorma, n_dictamen) keep their original
+    form. Translation ends at the boundary (norm_id in the tool -> idNorma in
+    the query param).
 
-  Convenciones del proyecto:
-  - Interfaz en inglés: nombres de tools MCP, argumentos, filenames, descripciones de tools y
-    comentarios de código. Los datos crudos del dominio (texto legal en español, campos del
-    response de BCN, nombres de parámetros de la API como idNorma) se mantienen tal cual.
-    La traducción termina en la frontera (ej: norm_id en la tool → idNorma en el query param).
-  - Los artifacts OpenSpec (proposal, specs, design, tasks) se redactan en español.
-  - Norma LLM-first + structured: toda tool devuelve TextContent formateado para lectura del
-    modelo Y structuredContent tipado como segundo valor del handler (el go-sdk genera el
-    outputSchema automáticamente). El texto es una vista del structured (mismo dato, sin drift);
-    nunca JSON embebido como string dentro del texto; campos opcionales del output con omitempty.
-  - Tests sin red: suite testify con MockLawClient creado en SetupTest; el cliente real se testea
-    contra httptest.Server con fixtures reales en testdata/. En expectativas de mocks usadas por
-    handlers MCP, matchear el ctx con mock.Anything (el go-sdk pasa un contexto derivado; un
-    mismatch hace Goexit en la goroutine del handler y cuelga CallTool). Args de tools con
-    defaults llevan omitempty en el tag json (sin omitempty el schema generado los marca required).
-  - Configuración: endpoints declarados en internal/config/api.resources.yaml y prompts en internal/prompts/prompts.yaml, ambos bakeados en el binario via go:embed (sin override
-    por env, sin hot-reload, sin archivos externos — los cambios se despliegan rebuildando el binario/imagen, que embebe ambos).
-    Settings del server por variables de entorno MCP_TRANSPORT, MCP_HOST, MCP_PORT, MCP_PATH y MCP_AUTH_TOKEN cargadas una vez al
-    arranque. Instancia única inyectada por constructor (nunca estado global).
-  - Sanitización: todo texto que llega al LLM pasa por internal/bcn/sanitize.go (pasada única);
-    la "basura" de la API (entidades, &nbsp;, XML embebido, control chars) vive como constantes
-    nombradas en internal/bcn/garbage.go — nunca magic strings/numbers en la lógica.
-  - Calidad: make check (build+vet+test) como verificación completa local, make fmt-check,
-    benchmarks con guard rails en tests. Linter modernize: usar slices.Contains/ContainsFunc
-    en lugar de loops de pertenencia.
-  - Infraestructura: Dockerfile multi-stage BUILDPLATFORM (Go cross-compila nativo, QEMU solo
-    para el apk add del runtime arm64), usuario no-root, healthcheck /health. RUNTIME LOCAL:
-    podman es el runtime principal (podman-compose para orquestación; el compose file es
-    tool-agnostic), docker es solo fallback — Makefile: make podman-build/run/stop/logs y
-    make compose-up/down (cadena: podman-compose → docker compose). CI separado de publish
-    (docker buildx amd64+arm64 en GitHub → GHCR con tags v*).
+  Tech stack: Go 1.27. MCP server with modelcontextprotocol/go-sdk v1.7.0
+  (stdio + streamable HTTP, one instance serving both transports). HTTP client
+  resty v3 (resty.dev/v3 v3.0.0-rc.3) with one *resty.Client per resource
+  (built-in count-based breaker + per-request retry declared in the YAML).
+  golang.org/x/sync singleflight coalesces concurrent requests for the same
+  key (retry and breaker run inside the flight). In-memory caching: bcn uses
+  an ETag-revalidating LRU (etagCache); cgr uses plain LRU tiers (light=100 /
+  heavy=20 — CGR sends no ETag/304). html-to-markdown v2.5.2 (base+commonmark+
+  table plugins). yaml.v3 for the endpoint contract. Testify (suite) + mockery
+  v3 as a Go tool (testify template; mocks generated next to the source file
+  with snake_case names).
+  Domain: search and retrieval of Chilean legal norms and administrative
+  jurisprudence from two upstream sources — LeyChile / Biblioteca del Congreso
+  Nacional (BCN: laws, decrees, resolutions) and Contraloría General de la
+  República (CGR: dictámenes, auditorías, instructivos, jurisprudencia).
+
+  Act as a senior Go developer with MCP experience. Before defining any
+  artifact, make sure the proposal is consistent with the project context and
+  development conventions. If it is not, fix the proposal before continuing.
+
+  Project conventions:
+  - Config: endpoints declared in internal/config/api.resources.yaml (BCN and
+    CGR resources), prompts in internal/prompts/bcn/prompts.yaml and
+    internal/prompts/cgr/prompts.yaml (shared renderer in
+    internal/prompts/internal). All baked into the binary via go:embed (no env
+    override, no hot-reload, no external files — changes ship by rebuilding
+    the binary/image, which embeds them). Server settings via MCP_TRANSPORT,
+    MCP_HOST, MCP_PORT, MCP_PATH and MCP_AUTH_TOKEN env vars, loaded once at
+    startup. Single instance injected via constructor (never global state).
+  - LLM-first + structured: every tool returns TextContent formatted for model
+    reading AND typed structuredContent as the handler's second value (the
+    go-sdk generates the outputSchema automatically). The text is a view of
+    the structured data (same data, no drift); never JSON embedded as a string
+    inside the text; optional output fields use omitempty.
+  - Tests without network: testify suites with generated mocks created in
+    SetupTest; the real clients are tested against httptest.Server with real
+    fixtures in testdata/. In mock expectations used by MCP handlers, match
+    ctx with mock.Anything (the go-sdk passes a derived context; a mismatch
+    causes Goexit in the handler goroutine and hangs CallTool). Tool args with
+    defaults carry omitempty in the json tag (without omitempty the generated
+    schema marks them required).
+  - Sanitization: all text reaching the LLM goes through
+    internal/bcn/sanitize.go or internal/cgr/sanitize.go (single pass); API
+    "garbage" (entities, &nbsp;, embedded XML, control chars) lives as named
+    constants in internal/bcn/garbage.go and internal/cgr/garbage.go — never
+    magic strings/numbers in logic.
+  - Quality: make check (build+vet+test) as full local verification (same as
+    CI), make fmt-check, benchmarks with guard rails in tests. modernize
+    linter: prefer slices.Contains/ContainsFunc over membership loops.
+  - Infrastructure: multi-stage Dockerfile with BUILDPLATFORM (Go
+    cross-compiles natively, QEMU only for the arm64 runtime apk add),
+    non-root user, /health healthcheck. LOCAL RUNTIME: podman is the primary
+    runtime (podman-compose for orchestration; the compose file is
+    tool-agnostic), docker is fallback only — Makefile: make
+    podman-build/run/stop/logs and make compose-up/down (chain:
+    podman-compose -> docker compose). CI separate from publish (docker
+    buildx amd64+arm64 on GitHub -> GHCR with v* tags).

@@ -26,7 +26,7 @@ type GetLawHistoryOutput struct {
 
 // RegisterGetLawHistory registers the get_law_history tool on the MCP server.
 func RegisterGetLawHistory(srv *mcp.Server, client bcn.LawClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name: "get_law_history",
 		Description: "Get the legislative history of a Chilean law by its norm_id: its own " +
 			"history, the laws that modified it (modificatorias) and the laws it modified " +

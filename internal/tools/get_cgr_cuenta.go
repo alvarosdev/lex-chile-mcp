@@ -31,7 +31,7 @@ type GetCgrCuentaOutput struct {
 
 // RegisterGetCgrCuenta registers the get_cgr_cuenta tool.
 func RegisterGetCgrCuenta(srv *mcp.Server, client cgr.CgrClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name:        "get_cgr_cuenta",
 		Description: "Get a Contraloría cuenta sentencia by its cuenta_id (from search_cgr with source cuentas). Returns numero_sentencia, numero_expediente, sanitized texto, fecha_sentencia, fecha_expediente and PDF URLs with char_count for citation.",
 	}, makeGetCgrCuenta(client))

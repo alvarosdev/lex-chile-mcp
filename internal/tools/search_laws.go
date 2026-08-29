@@ -18,8 +18,9 @@ type SearchLawsArgs struct {
 	PageSize int    `json:"page_size,omitempty" jsonschema:"results per page (default 10, max 50)"`
 }
 
-// SearchResultOut is one result inside the structured output, with the
-// COMPLETE summary (the text view truncates; the structured does not).
+// SearchResultOut is one result inside the structured output. The summary
+// carries the SAME truncation as the text view — both views describe the
+// same scope, no duplicated-complete-summary drift.
 type SearchResultOut struct {
 	NormID    int64  `json:"norm_id"`
 	Type      string `json:"type"`
@@ -42,7 +43,7 @@ type SearchLawsOutput struct {
 
 // RegisterSearchLaws registers the search_laws tool on the MCP server.
 func RegisterSearchLaws(srv *mcp.Server, client bcn.LawClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name: "search_laws",
 		Description: "Search Chilean laws, decrees and resolutions in LeyChile (Biblioteca " +
 			"del Congreso Nacional de Chile). Returns paginated results with the norm_id " +
@@ -103,7 +104,7 @@ func buildSearchOutput(result bcn.SearchResponse, args SearchLawsArgs) SearchLaw
 			Title:     norma.TituloNorma,
 			Published: norma.FechaPublicacion,
 			Organism:  norma.Organismo,
-			Summary:   norma.Resumen,
+			Summary:   truncate(norma.Resumen, 600),
 		})
 	}
 	return out
@@ -112,8 +113,8 @@ func buildSearchOutput(result bcn.SearchResponse, args SearchLawsArgs) SearchLaw
 // formatSearchResults renders the search response for the LLM: header with
 // pagination, then one entry per norm with the fields the model needs to
 // decide (type, number, title, dates, organism, summary) and the norm_id
-// to fetch the full content. The summary is truncated for the model; the
-// structured output carries the complete one.
+// to fetch the full content. The summary is truncated identically in the
+// text and structured views.
 func formatSearchResults(result bcn.SearchResponse, args SearchLawsArgs) string {
 	total := int(result.Pagination.TotalItems)
 	totalPages := (total + args.PageSize - 1) / args.PageSize

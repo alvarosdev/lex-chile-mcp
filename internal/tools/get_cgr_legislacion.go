@@ -34,7 +34,7 @@ type GetCgrLegislacionOutput struct {
 
 // RegisterGetCgrLegislacion registers the get_cgr_legislacion tool.
 func RegisterGetCgrLegislacion(srv *mcp.Server, client cgr.CgrClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name:        "get_cgr_legislacion",
 		Description: "Get a Contraloría legislación entry by its legislacion_id (from search_cgr with source legislacion, e.g. RZA005691400 or FRA000012000). Returns tipo, número, organismo, materias, sanitized texto_, fecha_documento and caracter with char_count for citation.",
 	}, makeGetCgrLegislacion(client))

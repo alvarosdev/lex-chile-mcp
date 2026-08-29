@@ -111,3 +111,64 @@ func ContentCharCount(blocks []HtmlBlock) int {
 	walk(blocks, 0)
 	return total
 }
+
+// ContentSizes maps every block id to the char count of its subtree —
+// exactly what ContentCharCount returns for that subtree slice (block at
+// depth 0, descendants at their relative depths). The fold renderer and
+// the tests rely on this equality; keep in sync with ContentCharCount.
+// The walk recomputes each subtree (integer adds only, lens are O(1)):
+// measured corpus tops out at a few thousand blocks, so this stays in the
+// microsecond range.
+func ContentSizes(blocks []HtmlBlock) map[int64]int {
+	sizes := make(map[int64]int)
+	var walk func(blocks []HtmlBlock)
+	walk = func(blocks []HtmlBlock) {
+		for _, block := range blocks {
+			sizes[block.I] = subtreeSize(block, 0)
+			walk(block.H)
+		}
+	}
+	walk(blocks)
+	return sizes
+}
+
+// subtreeSize computes the ContentCharCount arithmetic of the subtree
+// rooted at block at the given depth (heading prefix grows with depth,
+// capped at ######; leaf blocks add their markdown).
+func subtreeSize(block HtmlBlock, depth int) int {
+	heading := block.SectionName
+	if heading == "" {
+		heading = fmt.Sprintf("Section %d", block.I)
+	}
+	prefix := 6
+	if depth < 3 {
+		prefix = 3 + depth
+	}
+	total := prefix + 1 + len([]rune(heading)) + 2 // "%s %s\n\n"
+	if len(block.H) == 0 {
+		total += len([]rune(block.Markdown)) + 2 // markdown + "\n\n"
+	}
+	for _, child := range block.H {
+		total += subtreeSize(child, depth+1)
+	}
+	return total
+}
+
+// SectionStructure returns the structure subtree rooted at the part whose
+// I equals sectionID (estructura nests via H). The bool reports whether
+// the part exists.
+func (n *NormaFull) SectionStructure(sectionID int64) ([]EstructuraPart, bool) {
+	var walk func(parts []EstructuraPart) ([]EstructuraPart, bool)
+	walk = func(parts []EstructuraPart) ([]EstructuraPart, bool) {
+		for i := range parts {
+			if parts[i].I == sectionID {
+				return []EstructuraPart{parts[i]}, true
+			}
+			if subtree, ok := walk(parts[i].H); ok {
+				return subtree, true
+			}
+		}
+		return nil, false
+	}
+	return walk(n.Estructura)
+}

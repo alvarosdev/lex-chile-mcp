@@ -23,25 +23,29 @@ type GetLawArgs struct {
 	SectionID     int64  `json:"section_id,omitempty" jsonschema:"structure id of the section to return (from get_law_summary or get_law structure_only); omit to return the whole norm"`
 }
 
-// GetLawOutput is the structured content of get_law. Content is omitted
-// when the norm was requested with structure_only. VersionDate and
-// SectionID echo the requested scope; CharCount and ArticleCount describe
-// the content returned: the whole norm, or the section when SectionID is
-// set.
+// GetLawOutput is the structured content of get_law. Estructura follows
+// the request scope: the full flatten for structure_only, the section
+// subtree when SectionID is set, empty in the degraded whole-norm map
+// (the folded text TOC is the map; the complete structure lives in
+// get_law_summary / structure_only). The rendered markdown travels in the
+// text view only — never duplicated here. VersionDate and SectionID echo
+// the requested scope; CharCount and ArticleCount always describe the
+// REAL scope (whole norm or section), including when the content was
+// withheld (Degraded) for exceeding the output budget.
 type GetLawOutput struct {
 	Metadatos    bcn.Metadatos          `json:"metadatos"`
-	Estructura   []bcn.StructurePartOut `json:"estructura"`
+	Estructura   []bcn.StructurePartOut `json:"estructura,omitempty"`
 	Proyectos    []bcn.Proyecto         `json:"proyectos"`
-	Content      string                 `json:"content,omitempty"`
 	VersionDate  string                 `json:"version_date,omitempty"`
 	SectionID    int64                  `json:"section_id,omitempty"`
 	CharCount    int                    `json:"char_count"`
 	ArticleCount int                    `json:"article_count"`
+	Degraded     bool                   `json:"degraded,omitempty"`
 }
 
 // RegisterGetLaw registers the get_law tool on the MCP server.
 func RegisterGetLaw(srv *mcp.Server, client bcn.LawClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name: "get_law",
 		Description: "Get the content of a Chilean law, decree or resolution by its norm_id " +
 			"(from search_laws). Returns metadata, the table of contents and the text in " +
@@ -81,10 +85,11 @@ func makeGetLaw(client bcn.LawClient) mcp.ToolHandlerFor[GetLawArgs, GetLawOutpu
 			}
 		}
 
-		output := buildGetLawOutput(norma, args)
+		scope := resolveScope(norma, args)
+		output := buildGetLawOutput(norma, args, scope)
 		return &mcp.CallToolResult{
 			Content: []mcp.Content{
-				&mcp.TextContent{Text: formatNorma(norma, args)},
+				&mcp.TextContent{Text: formatNorma(norma, args, scope)},
 			},
 		}, output, nil
 	}
@@ -102,27 +107,63 @@ func contentBlocks(norma bcn.NormaFull, args GetLawArgs) []bcn.HtmlBlock {
 	return norma.Html
 }
 
-// buildGetLawOutput projects the norm into the structured output. Content
-// (the Markdown body) is omitted when structureOnly is set. The counts
-// describe the content returned: the section when SectionID is set, the
-// whole norm otherwise.
-func buildGetLawOutput(norma bcn.NormaFull, args GetLawArgs) GetLawOutput {
+// normaScope is the resolved delivery scope of a get_law request: the
+// blocks to render, per-section sizes for the folded TOC, the REAL counts
+// of the requested scope, and whether the content exceeds the output
+// budget (degraded — delivered as a navigable map instead of a body).
+type normaScope struct {
+	blocks       []bcn.HtmlBlock
+	sizes        map[int64]int
+	charCount    int
+	articleCount int
+	degraded     bool
+}
+
+// resolveScope computes the delivery scope once for both views (text and
+// structured) so the budget check and the counts cannot drift apart.
+func resolveScope(norma bcn.NormaFull, args GetLawArgs) normaScope {
 	blocks := contentBlocks(norma, args)
 	articleCount := norma.CountArticles()
 	if args.SectionID > 0 {
 		articleCount = norma.CountSectionArticles(args.SectionID)
 	}
+	charCount := bcn.ContentCharCount(blocks)
+	return normaScope{
+		blocks:       blocks,
+		sizes:        bcn.ContentSizes(norma.Html),
+		charCount:    charCount,
+		articleCount: articleCount,
+		degraded:     !args.StructureOnly && charCount > maxContentChars,
+	}
+}
+
+// buildGetLawOutput projects the norm into the structured output. The
+// markdown body is never duplicated here (the text view renders it);
+// Estructura follows the request scope (see GetLawOutput). The counts
+// always describe the REAL requested scope — whole norm or section —
+// including in degraded responses, where they state what was withheld.
+func buildGetLawOutput(norma bcn.NormaFull, args GetLawArgs, scope normaScope) GetLawOutput {
 	out := GetLawOutput{
 		Metadatos:    norma.Metadatos,
-		Estructura:   bcn.FlattenStructure(norma.Estructura),
 		Proyectos:    norma.Proyectos,
 		VersionDate:  args.VersionDate,
 		SectionID:    args.SectionID,
-		CharCount:    bcn.ContentCharCount(blocks),
-		ArticleCount: articleCount,
+		CharCount:    scope.charCount,
+		ArticleCount: scope.articleCount,
+		Degraded:     scope.degraded,
 	}
-	if !args.StructureOnly {
-		out.Content = normaContentMarkdown(blocks)
+	switch {
+	case args.StructureOnly:
+		out.Estructura = bcn.FlattenStructure(norma.Estructura)
+	case args.SectionID > 0:
+		if subtree, ok := norma.SectionStructure(args.SectionID); ok {
+			out.Estructura = bcn.FlattenStructure(subtree)
+		}
+	case scope.degraded:
+		// Degraded whole-norm map: the folded text TOC is the map. The
+		// complete flatten stays in get_law_summary / structure_only.
+	default:
+		out.Estructura = bcn.FlattenStructure(norma.Estructura)
 	}
 	return out
 }
@@ -161,19 +202,14 @@ func renderBlocks(b *strings.Builder, blocks []bcn.HtmlBlock, depth int) {
 	}
 }
 
-// formatNorma renders a norm for the LLM: metadata header with the size
-// and (when sectioned) the section name, related bills, table of contents,
-// and (unless structureOnly) the Markdown content — the whole norm or just
-// the requested section. When a historical version was requested, the
-// header states it.
-func formatNorma(norma bcn.NormaFull, args GetLawArgs) string {
-	blocks := contentBlocks(norma, args)
-	articleCount := norma.CountArticles()
-	if args.SectionID > 0 {
-		articleCount = norma.CountSectionArticles(args.SectionID)
-	}
-	charCount := bcn.ContentCharCount(blocks)
-
+// formatNorma renders a norm for the LLM: metadata header with the REAL
+// scope size and (when sectioned) the section name, related bills, the
+// folded table of contents — the whole norm's map, or the local sub-TOC of
+// the section's children — and the Markdown content. Content that exceeds
+// the output budget is NEVER delivered truncated: the response degrades to
+// the folded map plus an explicit drill signal. When a historical version
+// was requested, the header states it.
+func formatNorma(norma bcn.NormaFull, args GetLawArgs, scope normaScope) string {
 	var b strings.Builder
 	m := norma.Metadatos
 
@@ -190,9 +226,9 @@ func formatNorma(norma bcn.NormaFull, args GetLawArgs) string {
 		fmt.Fprintf(&b, " to %s", m.Vigencia.FinVigencia)
 	}
 	fmt.Fprintf(&b, "\nDerogated: %t\n", m.Derogado)
-	fmt.Fprintf(&b, "Size: %s chars · %s\n", humanCount(charCount), formatArticles(articleCount))
+	fmt.Fprintf(&b, "Size: %s chars · %s\n", humanCount(scope.charCount), formatArticles(scope.articleCount))
 	if args.SectionID > 0 {
-		fmt.Fprintf(&b, "Section: %s\n", sectionHeading(blocks, args.SectionID))
+		fmt.Fprintf(&b, "Section: %s\n", sectionHeading(scope.blocks, args.SectionID))
 	}
 	if len(m.Materias) > 0 {
 		fmt.Fprintf(&b, "Subjects: %s\n", strings.Join(m.Materias, ", "))
@@ -205,37 +241,71 @@ func formatNorma(norma bcn.NormaFull, args GetLawArgs) string {
 		for _, v := range m.Vinculaciones {
 			links = append(links, v.Text)
 		}
-		fmt.Fprintf(&b, "Related norms: %s\n", strings.Join(links, "; "))
+		// Header hygiene: cap the visible list; the structured output
+		// keeps every vinculacion.
+		if len(links) > maxRelatedNorms {
+			fmt.Fprintf(&b, "Related norms: %d total — showing first %d: %s\n",
+				len(links), maxRelatedNorms, strings.Join(links[:maxRelatedNorms], "; "))
+		} else {
+			fmt.Fprintf(&b, "Related norms: %s\n", strings.Join(links, "; "))
+		}
 	}
 
 	// The section view stays lightweight: the summary and related bills are
 	// skipped in the TEXT when drilling into a section (they repeat what the
 	// summary call already showed and they ride along complete in
-	// structuredContent). The table of contents stays — it is what lets the
-	// agent chain the next section without another call.
+	// structuredContent).
 	if args.SectionID == 0 {
 		if len(m.Resumenes) > 0 {
 			fmt.Fprintf(&b, "\nSummary: %s\n", truncate(m.Resumenes[0], 1200))
 		}
 		if len(norma.Proyectos) > 0 {
-			b.WriteString("\n## Related bills\n")
+			type billLine struct{ boletin, info, enlace string }
+			var bills []billLine
 			for _, p := range norma.Proyectos {
 				for _, pl := range p.Pls {
-					fmt.Fprintf(&b, "- %s — %s\n", pl.NroBoletin, pl.Informacion)
-					if pl.Enlace != "" {
-						fmt.Fprintf(&b, "  %s\n", pl.Enlace)
-					}
+					bills = append(bills, billLine{pl.NroBoletin, pl.Informacion, pl.Enlace})
+				}
+			}
+			// Header hygiene, same rule as related norms: meganorms in
+			// permanent amendment carry hundreds of bills (the Código
+			// Civil lists ~330). The structured output keeps them all.
+			b.WriteString("\n## Related bills\n")
+			visible := bills
+			if len(visible) > maxRelatedNorms {
+				visible = visible[:maxRelatedNorms]
+				fmt.Fprintf(&b, "%d total — showing first %d\n\n", len(bills), maxRelatedNorms)
+			}
+			for _, bl := range visible {
+				fmt.Fprintf(&b, "- %s — %s\n", bl.boletin, bl.info)
+				if bl.enlace != "" {
+					fmt.Fprintf(&b, "  %s\n", bl.enlace)
 				}
 			}
 		}
 	}
 
+	// Structure: the global folded map, or the LOCAL sub-TOC of the
+	// requested section's children — the next drill-down level travels
+	// with every section response, the global index does not.
 	b.WriteString("\n## Structure\n")
-	renderStructure(&b, norma.Estructura, 0)
+	flat := bcn.FlattenStructure(norma.Estructura)
+	if args.SectionID > 0 {
+		renderFoldedSubTOC(&b, flat, scope.sizes, args.SectionID)
+	} else {
+		renderFoldedTOC(&b, flat, scope.sizes)
+	}
 
-	if !args.StructureOnly {
+	switch {
+	case scope.degraded:
+		// Completeness invariant: declare the omission, the real total and
+		// the recovery path — never a silent cut.
+		fmt.Fprintf(&b, "\n## Content\n\nContent withheld: %s chars exceeds the %s-char response budget. "+
+			"Drill with section_id (ids and sizes listed above).\n",
+			humanCount(scope.charCount), humanCount(maxContentChars))
+	case !args.StructureOnly:
 		b.WriteString("\n## Content\n\n")
-		b.WriteString(normaContentMarkdown(blocks))
+		b.WriteString(normaContentMarkdown(scope.blocks))
 	}
 
 	return b.String()
@@ -267,14 +337,6 @@ func formatArticles(n int) string {
 		return "1 article"
 	}
 	return fmt.Sprintf("%d articles", n)
-}
-
-// renderStructure renders the nested table of contents as an indented list.
-func renderStructure(b *strings.Builder, parts []bcn.EstructuraPart, depth int) {
-	for _, part := range parts {
-		fmt.Fprintf(b, "%s- %s\n", strings.Repeat("  ", depth), part.N)
-		renderStructure(b, part.H, depth+1)
-	}
 }
 
 // validateVersionDate enforces the strict YYYY-MM-DD format. The API

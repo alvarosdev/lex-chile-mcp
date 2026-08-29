@@ -37,7 +37,7 @@ var contableIDToolRe = regexp.MustCompile(`^(E[0-9]{1,6}|OFE[0-9]{10,13}|E[0-9]+
 
 // RegisterGetCgrContable registers the get_cgr_contable tool.
 func RegisterGetCgrContable(srv *mcp.Server, client cgr.CgrClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name:        "get_cgr_contable",
 		Description: "Get a contable oficio by its contable_id (from search results, e.g. E080961 or OFE0809612600). Returns metadata (numero, normativa_contable, tipo, parte, destinatarios, origen, fecha_documento) and the sanitized texto with char_count.",
 	}, makeGetCgrContable(client))

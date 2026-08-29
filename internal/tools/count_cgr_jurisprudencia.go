@@ -31,7 +31,7 @@ type CountCgrJurisprudenciaOutput struct {
 
 // RegisterCountCgrJurisprudencia registers the count_cgr_jurisprudencia tool.
 func RegisterCountCgrJurisprudencia(srv *mcp.Server, client cgr.CgrClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name:        "count_cgr_jurisprudencia",
 		Description: "Count cross-type Contraloría results (dictamenes, auditoria, legislacion, etc.) for a query without fetching documents. Use it to explore how many results exist per type before searching. Returns total and buckets with counts per type.",
 	}, makeCountCgrJurisprudencia(client))

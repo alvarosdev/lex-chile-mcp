@@ -23,11 +23,12 @@ const (
 	toolGetLaw        = "get_law"
 	toolGetLawSummary = "get_law_summary"
 	toolGetLawHistory = "get_law_history"
+	toolFindInNorm    = "find_in_norm"
 )
 
 // ToolNames returns the tool names the prompts reference.
 func ToolNames() []string {
-	return []string{toolSearchLaws, toolGetLaw, toolGetLawSummary, toolGetLawHistory}
+	return []string{toolSearchLaws, toolGetLaw, toolGetLawSummary, toolGetLawHistory, toolFindInNorm}
 }
 
 //go:embed prompts.yaml
@@ -64,6 +65,7 @@ var allowedPlaceholders = map[string]bool{
 	"tool_get_law":         true,
 	"tool_get_law_summary": true,
 	"tool_get_law_history": true,
+	"tool_find_in_norm":    true,
 }
 
 // PromptSet holds the parsed, validated prompt templates.
@@ -86,6 +88,7 @@ func toolVars() map[string]string {
 		"tool_get_law":         toolGetLaw,
 		"tool_get_law_summary": toolGetLawSummary,
 		"tool_get_law_history": toolGetLawHistory,
+		"tool_find_in_norm":    toolFindInNorm,
 	}
 }
 
