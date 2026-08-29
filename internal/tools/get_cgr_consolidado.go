@@ -36,7 +36,7 @@ var consolidadoToolIDRe = regexp.MustCompile(`^CIC[0-9]{1,4}/[0-9]{4}$`)
 
 // RegisterGetCgrConsolidado registers the get_cgr_consolidado tool.
 func RegisterGetCgrConsolidado(srv *mcp.Server, client cgr.CgrClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name:        "get_cgr_consolidado",
 		Description: "Get a Contraloría consolidado CIC by its consolidado_id (e.g. CIC21/2026). Returns metadata (número, nombre, tipo, reseña, fecha_documento, unidad_cgr, sector) and sanitized contenido_extraido with char_count and PDF URL.",
 	}, makeGetCgrConsolidado(client))

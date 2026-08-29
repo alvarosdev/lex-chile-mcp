@@ -8,9 +8,10 @@ prompts:
 
     MCP is the source of truth — do NOT assume law beyond the tool output. Treat the law as a technical object: hierarchy Constitution > law > rest of the system (arts. 19-24 Código Civil). Avoid bias: do not search for what you want it to say, but what it effectively says; separate technical from preferences; see interpret_law for method. For deep method, see interpret_law.
 
-    Step 1: call {{.tool_get_law_summary}}(norm_id={{.norm_id}}) to understand the scope and official summary.
-    Step 2: call {{.tool_get_law}}(norm_id={{.norm_id}}, structure_only=true) to read the table of contents.
-    Step 3: call {{.tool_get_law}}(norm_id={{.norm_id}}) to read the full text.
+    Step 1: call {{.tool_get_law_summary}}(norm_id={{.norm_id}}) to understand the scope and official summary. The folded structure lists containers with their section ids and sizes; a collapsed container shows its textual article range (e.g. "arts. Artículo 1718–Artículo 1805") so you can locate content without listing every article.
+    Step 2: when you already know what to look for (an article number or a distinctive phrase), call {{.tool_find_in_norm}}(norm_id={{.norm_id}}, query="<article number or phrase>") — it returns the matching section_id directly, ranked: name matches first.
+    Step 3: call {{.tool_get_law}}(norm_id={{.norm_id}}, structure_only=true) to read the table of contents.
+    Step 4: call {{.tool_get_law}}(norm_id={{.norm_id}}, section_id=<section id>) for each relevant section. For short norms (check the Size line) reading the whole norm is fine; if the content exceeds the response budget the call returns a navigable map with a "Content withheld" line — drill down with section_id instead of retrying the full call.
 
     Structure the analysis: purpose, scope, obligations, sanctions, entry into force.{{if .aspect}} Focus the analysis on: {{.aspect}}.{{end}}
 
@@ -24,7 +25,7 @@ prompts:
     Step 1: call {{.tool_search_laws}}(query="{{.topic}}"). If results are noisy, refine the query with the norm type (e.g. "Ley {{.topic}}", "Decreto {{.topic}}").
     Step 2: read the summaries in the results — do NOT open a norm before reading its summary.
     Step 3: pick the most relevant result and confirm with {{.tool_get_law_summary}}(norm_id=...).
-    Step 4: verify with {{.tool_get_law}}(norm_id=...) before stating anything as fact. NEVER invent norm numbers or content.
+    Step 4: verify with {{.tool_get_law}}(norm_id=..., section_id=<section id from the summary>) on the relevant section. To locate the topic phrase inside a large norm, call {{.tool_find_in_norm}}(norm_id=..., query="<topic phrase>") and drill into the matching section_id. NEVER invent norm numbers or content.
 
   compare_law_versions: |
     Compare norm {{.norm_id}} between {{.from_date}} and {{.to_date}}.{{if .lang}} Respond in {{.lang}}.{{else}} Respond in the user's language (default Spanish).{{end}}
@@ -33,7 +34,7 @@ prompts:
 
     Call {{.tool_get_law}}(norm_id={{.norm_id}}, version_date={{.from_date}}) and {{.tool_get_law}}(norm_id={{.norm_id}}, version_date={{.to_date}}).
 
-    Report what changed: which articles were modified, added or removed, and when each change took effect. The "Version: as of" line tells you which version you are reading. For method, see interpret_law.
+    Report what changed: which articles were modified, added or removed, and when each change took effect. The "Version: as of" line tells you which version you are reading. In very large norms the full-text call returns a navigable map ("Content withheld") — compare section by section with section_id from each version's summary instead. For method, see interpret_law.
 
   trace_law_history: |
     Trace the legislative history of norm {{.norm_id}}.{{if .lang}} Respond in {{.lang}}.{{else}} Respond in the user's language (default Spanish).{{end}}
@@ -52,7 +53,7 @@ prompts:
   explain_law_simply: |
     Explain norm {{.norm_id}} in plain language.{{if .audience}} Audience: {{.audience}}.{{end}}{{if .lang}} Respond in {{.lang}}.{{else}} Respond in the user's language (default Spanish).{{end}}
 
-    MCP is the source of truth. Call {{.tool_get_law_summary}}(norm_id={{.norm_id}}), then {{.tool_get_law}}(norm_id={{.norm_id}}) to read the actual text. Explain without legal jargon.
+    MCP is the source of truth. Call {{.tool_get_law_summary}}(norm_id={{.norm_id}}), then {{.tool_get_law}}(norm_id={{.norm_id}}) to read the actual text; if it returns a navigable map ("Content withheld"), read the relevant sections with section_id from the summary structure. Explain without legal jargon.
 
     For every claim, cite the source article. End with: this explanation is not legal advice, just an information source; AI interpretation may vary between models and providers. Consult the official text at bcn.cl. See interpret_law for bias-free method.
 
@@ -61,8 +62,9 @@ prompts:
 
     MCP is the source of truth. Avoid bias as in interpret_law.
 
-    Step 1: call {{.tool_get_law_summary}}(norm_id={{.norm_id}}) — it returns the summary, the size and the table of contents with the section ids.
-    Step 2: read the structure and call {{.tool_get_law}}(norm_id={{.norm_id}}, section_id=<section id>) ONLY for the sections relevant to the question. NEVER call {{.tool_get_law}} without section_id unless the Size line shows a short norm.
+    Step 1: call {{.tool_get_law_summary}}(norm_id={{.norm_id}}) — it returns the summary, the size and the folded table of contents with the section ids (collapsed containers show their textual article ranges).
+    Step 2: if the question names an article number or a distinctive phrase, call {{.tool_find_in_norm}}(norm_id={{.norm_id}}, query="<phrase>") — name matches rank first and every match carries its section_id and size.
+    Step 3: call {{.tool_get_law}}(norm_id={{.norm_id}}, section_id=<section id>) ONLY for the sections relevant to the question. For short norms (check the Size line) reading the whole norm is fine; over-budget norms answer with a navigable map ("Content withheld") — never retry the full call, drill with section_id.
 
     For every claim, cite the article number. NEVER invent articles or content — verify everything against the actual returned text.
 
@@ -71,7 +73,7 @@ prompts:
 
     MCP is the source of truth. Hierarchy Constitution > law; arts. 19-24 Código Civil apply. Avoid bias.
 
-    Step 1: call {{.tool_get_law_summary}}(norm_id=242302{{if .version_date}}, version_date={{.version_date}}{{end}}) — it returns the Size and the table of contents with section_ids (Chapters I-XV and DISPOSICIONES TRANSITORIAS). Read the Structure to map the question to 1-3 relevant section_ids. If article_hint is provided ("{{.article_hint}}"), prioritize the entry matching that hint (fuzzy match against Estructura[].n); otherwise map question keywords to chapter/article names (e.g. "propiedad" → Capítulo III, "plebiscito 2022" → DISPOSICIONES TRANSITORIAS → VIGÉSIMAQUINTA).
+    Step 1: call {{.tool_get_law_summary}}(norm_id=242302{{if .version_date}}, version_date={{.version_date}}{{end}}) — it returns the Size and the table of contents with section_ids (Chapters I-XV and DISPOSICIONES TRANSITORIAS). Read the Structure to map the question to 1-3 relevant section_ids. If article_hint is provided ("{{.article_hint}}"), prioritize the entry matching that hint (fuzzy match against Estructura[].n) or jump straight to it with {{.tool_find_in_norm}}(norm_id=242302, query="<article number>"); otherwise map question keywords to chapter/article names (e.g. "propiedad" → Capítulo III, "plebiscito 2022" → DISPOSICIONES TRANSITORIAS → VIGÉSIMAQUINTA).
 
     Step 2: call {{.tool_get_law}}(norm_id=242302, section_id=<section id>{{if .version_date}}, version_date={{.version_date}}{{end}}) ONLY for the sections identified. NEVER call {{.tool_get_law}} without section_id — the Constitution is ~410K chars; the Size line tells you whether a section is short. When a transitory provision modifies a permanent article (e.g. transitoria mentioning Art. 142), cite both. Also consider DISPOSICIONES TRANSITORIAS as eligible sections when the question mentions reforma/plebiscito/vigencia/transitoria.
 
@@ -88,7 +90,7 @@ prompts:
 
     Step 2: from both TOCs select the 1-3 most relevant sections (using question "{{.question}}" if provided or the summaries). Include DISPOSICIONES TRANSITORIAS when the question mentions reforma/plebiscito/vigencia/transitoria.
 
-    Step 3: call {{.tool_get_law}}(norm_id={{.norm_id}}, section_id=<section id>{{if .version_date}}, version_date={{.version_date}}{{end}}) and {{.tool_get_law}}(norm_id=242302, section_id=<section id>{{if .version_date}}, version_date={{.version_date}}{{end}}) for each selected section. NEVER call {{.tool_get_law}} without section_id unless the Size line shows a short norm.
+    Step 3: call {{.tool_get_law}}(norm_id={{.norm_id}}, section_id=<section id>{{if .version_date}}, version_date={{.version_date}}{{end}}) and {{.tool_get_law}}(norm_id=242302, section_id=<section id>{{if .version_date}}, version_date={{.version_date}}{{end}}) for each selected section. NEVER call {{.tool_get_law}} without section_id unless the Size line shows a short norm. If a selected section alone exceeds the output budget, its response maps its own children — drill one level deeper.
 
     Step 4: present a side-by-side textual parallelism "Art. X of norm {{.norm_id}} says ... | Art. Z CPR says ..." citing articles of both norms, and analyze compatibility conditionally ("conforme al texto retornado de Art. X and Art. Z CPR, podría interpretarse como constitucional/inconstitucional, en la medida que ...").
 
@@ -109,4 +111,4 @@ prompts:
 
     Anti-bias: avoid confirmation bias (consider counter-arguments), do not confuse desirable law with vigente law, ends do not justify means if contrary to text/spirit.
 
-    Call {{.tool_get_law_summary}}(norm_id={{.norm_id}}) for context and {{.tool_get_law}}(norm_id={{.norm_id}}) for the text at bcn.cl, and cite per claim. This is general information, not legal advice, just an information source; AI interpretation may vary between models and providers. For deeper, consult doctrina and jurisprudencia (Corte Suprema).
+    Call {{.tool_get_law_summary}}(norm_id={{.norm_id}}) for context and {{.tool_get_law}}(norm_id={{.norm_id}}, section_id=<section id>) for the relevant sections at bcn.cl (use {{.tool_find_in_norm}} to locate a phrase; the full-text call on very large norms returns a navigable map), and cite per claim. This is general information, not legal advice, just an information source; AI interpretation may vary between models and providers. For deeper, consult doctrina and jurisprudencia (Corte Suprema).

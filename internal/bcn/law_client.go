@@ -49,6 +49,10 @@ type LawClient interface {
 	GetNormaSummary(ctx context.Context, q NormaQuery) (NormaSummary, error)
 	// GetLawHistory returns the legislative history groups of one norm.
 	GetLawHistory(ctx context.Context, normID int64) ([]HistoriaGrupo, error)
+	// SearchNorma searches inside one cached norm for a literal
+	// case-insensitive substring (names first, then content) returning
+	// the section ids needed to drill with GetNorma.
+	SearchNorma(ctx context.Context, q NormaQuery, query string) (NormaSearchResult, error)
 }
 
 // NormaQuery identifies what to fetch: a norm id and, optionally, the
@@ -253,7 +257,9 @@ type Vinculacion struct {
 // NormaSummary is the lightweight projection of a norm: the metadata fields
 // that answer "what is this norm about", plus the flattened structure (with
 // the section ids to drill down with get_law) and the size of the full
-// content — without the content itself.
+// content — without the content itself. SectionSizes carries per-section
+// subtree char counts for the folded TOC renderer (derived from the cached
+// norm; never serialized — the flattened structure above is the contract).
 type NormaSummary struct {
 	TituloNorma     string             `json:"titulo_norma"`
 	Fuente          string             `json:"fuente"`
@@ -263,6 +269,7 @@ type NormaSummary struct {
 	Estructura      []StructurePartOut `json:"estructura"`
 	CharCount       int                `json:"char_count"`
 	ArticleCount    int                `json:"article_count"`
+	SectionSizes    map[int64]int      `json:"-"`
 }
 
 // HistoriaGrupo is one group of the legislative history of a norm:
@@ -592,5 +599,6 @@ func projectSummary(n NormaFull) NormaSummary {
 		Estructura:      FlattenStructure(n.Estructura),
 		CharCount:       ContentCharCount(n.Html),
 		ArticleCount:    n.CountArticles(),
+		SectionSizes:    ContentSizes(n.Html),
 	}
 }

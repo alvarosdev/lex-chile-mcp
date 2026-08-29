@@ -35,7 +35,7 @@ var instructivoIDToolRe = regexp.MustCompile(`^[A-Z]{0,3}[0-9]{1,6}N[0-9]{2}$`)
 
 // RegisterGetCgrInstructivo registers the get_cgr_instructivo tool.
 func RegisterGetCgrInstructivo(srv *mcp.Server, client cgr.CgrClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name:        "get_cgr_instructivo",
 		Description: "Get an instructivo by its instructivo_id (from search results, e.g. IN23N26 or E462387N24). Returns metadata (materia, descriptores, caracter) and the sanitized documento_completo with char_count and HTML/PDF URLs for citation and PDF download.",
 	}, makeGetCgrInstructivo(client))

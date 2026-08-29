@@ -20,7 +20,7 @@ type GetLawSummaryArgs struct {
 
 // RegisterGetLawSummary registers the get_law_summary tool on the MCP server.
 func RegisterGetLawSummary(srv *mcp.Server, client bcn.LawClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name: "get_law_summary",
 		Description: "Get a lightweight overview of a Chilean law, decree or resolution by its " +
 			"norm_id (from search_laws): title, source, matters, norm categories, the " +
@@ -60,8 +60,10 @@ func makeGetLawSummary(client bcn.LawClient) mcp.ToolHandlerFor[GetLawSummaryArg
 // formatNormaSummary renders the summary for the LLM: the map of the law.
 // The official BCN summary is short by nature, so it goes complete in the
 // text view. The size line states the magnitude of the FULL norm (the
-// summary counts are always the whole document), and the structure list
-// carries the section ids the model needs to drill down with get_law.
+// summary counts are always the whole document), and the structure list is
+// the FOLDED TOC — containers with their section ids, sizes and textual
+// article ranges — so a meganorm map stays in a few thousand tokens while
+// still locating every article by range.
 func formatNormaSummary(s bcn.NormaSummary, versionDate string) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "# %s\n\n", s.TituloNorma)
@@ -81,8 +83,6 @@ func formatNormaSummary(s bcn.NormaSummary, versionDate string) string {
 	}
 
 	b.WriteString("\n## Structure\n")
-	for _, p := range s.Estructura {
-		fmt.Fprintf(&b, "%s- %s | section_id: %d\n", strings.Repeat("  ", p.Depth), p.Name, p.ID)
-	}
+	renderFoldedTOC(&b, s.Estructura, s.SectionSizes)
 	return b.String()
 }

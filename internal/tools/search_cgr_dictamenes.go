@@ -20,7 +20,7 @@ type SearchCgrDictamenesArgs struct {
 
 // RegisterSearchCgrDictamenes registers the search_cgr_dictamenes tool (alias to search_cgr with source dictamenes).
 func RegisterSearchCgrDictamenes(srv *mcp.Server, client cgr.CgrClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name:        "search_cgr_dictamenes",
 		Description: "Search Chilean Contraloría dictámenes by text. Returns a paginated list (20 per page) with dictamen_id, n_dictamen, fecha_documento, materia, descriptores, criterio, origen, caracter and the HTML/PDF URLs for citation. Use get_cgr_dictamen(dictamen_id) to fetch the full document. Supports order date (newest), dateasc (oldest), score (relevance) and exact_search.",
 	}, makeSearchCgrDictamenes(client))

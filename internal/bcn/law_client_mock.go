@@ -302,3 +302,75 @@ func (_c *MockLawClient_Search_Call) RunAndReturn(run func(ctx context.Context, 
 	_c.Call.Return(run)
 	return _c
 }
+
+// SearchNorma provides a mock function for the type MockLawClient
+func (_mock *MockLawClient) SearchNorma(ctx context.Context, q NormaQuery, query string) (NormaSearchResult, error) {
+	ret := _mock.Called(ctx, q, query)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SearchNorma")
+	}
+
+	var r0 NormaSearchResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, NormaQuery, string) (NormaSearchResult, error)); ok {
+		return returnFunc(ctx, q, query)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, NormaQuery, string) NormaSearchResult); ok {
+		r0 = returnFunc(ctx, q, query)
+	} else {
+		r0 = ret.Get(0).(NormaSearchResult)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, NormaQuery, string) error); ok {
+		r1 = returnFunc(ctx, q, query)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockLawClient_SearchNorma_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SearchNorma'
+type MockLawClient_SearchNorma_Call struct {
+	*mock.Call
+}
+
+// SearchNorma is a helper method to define mock.On call
+//   - ctx context.Context
+//   - q NormaQuery
+//   - query string
+func (_e *MockLawClient_Expecter) SearchNorma(ctx any, q any, query any) *MockLawClient_SearchNorma_Call {
+	return &MockLawClient_SearchNorma_Call{Call: _e.mock.On("SearchNorma", ctx, q, query)}
+}
+
+func (_c *MockLawClient_SearchNorma_Call) Run(run func(ctx context.Context, q NormaQuery, query string)) *MockLawClient_SearchNorma_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 NormaQuery
+		if args[1] != nil {
+			arg1 = args[1].(NormaQuery)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockLawClient_SearchNorma_Call) Return(normaSearchResult NormaSearchResult, err error) *MockLawClient_SearchNorma_Call {
+	_c.Call.Return(normaSearchResult, err)
+	return _c
+}
+
+func (_c *MockLawClient_SearchNorma_Call) RunAndReturn(run func(ctx context.Context, q NormaQuery, query string) (NormaSearchResult, error)) *MockLawClient_SearchNorma_Call {
+	_c.Call.Return(run)
+	return _c
+}

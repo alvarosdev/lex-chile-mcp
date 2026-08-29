@@ -41,7 +41,7 @@ var auditoriaToolIDRe = regexp.MustCompile(`^([0-9]{1,4}/[0-9]{4}|[A-Z]*[0-9]+N[
 
 // RegisterGetCgrAuditoria registers the get_cgr_auditoria tool.
 func RegisterGetCgrAuditoria(srv *mcp.Server, client cgr.CgrClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name:        "get_cgr_auditoria",
 		Description: "Get a Contraloría auditoría informe by its auditoria_id (e.g. 371/2026 or 371N26). Returns metadata (número, nombre, tipo, objetivo, conclusiones, universo, muestra, destinatarios, servicio, unidad_cgr, fecha_documento) and sanitized contenido_pdf with char_count, truncated flag and PDF URL.",
 	}, makeGetCgrAuditoria(client))

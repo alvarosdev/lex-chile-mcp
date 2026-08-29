@@ -45,6 +45,7 @@ func (s *GetLawSummarySuite) TestSummaryValid() {
 		CategoriasNorma: []string{"Ley \"Educación sin Dicom\""},
 		Resumenes:       []string{"La presente ley establece la prohibición de comunicar información."},
 		Estructura:      []bcn.StructurePartOut{{Name: "TÍTULO I", ID: 100, Depth: 0}},
+		SectionSizes:    map[int64]int{100: 2870},
 		CharCount:       3200,
 		ArticleCount:    4,
 	}, nil).Once()
@@ -59,7 +60,7 @@ func (s *GetLawSummarySuite) TestSummaryValid() {
 	s.Contains(text, "prohibición de comunicar información")
 	s.Contains(text, "Size: 3.2K chars · 4 articles")
 	s.Contains(text, "## Structure", "the summary carries the map of the law (structure with section ids)")
-	s.Contains(text, "- TÍTULO I | section_id: 100")
+	s.Contains(text, "- TÍTULO I · section_id: 100 · 2.9K")
 	s.NotContains(text, "## Content", "summary must never include the norm content")
 
 	// Structured content: typed and complete.

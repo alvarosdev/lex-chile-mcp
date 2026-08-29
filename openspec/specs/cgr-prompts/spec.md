@@ -1,16 +1,17 @@
-## Purpose
+# cgr-prompts Specification
 
+## Purpose
 Prompts MCP curados para jurisprudencia de Contraloría (búsqueda, análisis, explicación e interpretación de dictámenes) que codifican el flujo `count → search → get` con citación `url`/`pdf_url`, método estructurado y anti-sesgo, de modo que cualquier LLM trate el MCP como fuente de la verdad y adapte la respuesta al idioma del usuario.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Prompts CGR curados expuestos
 
-El servidor DEBE exponer 4 prompts curados vía `prompts/list` desde `internal/prompts/cgr`: `search_jurisprudence` (argumentos `query` requerido, `order` y `exact_search` y `lang` opcionales), `analyze_dictamen` (`dictamen_id` requerido y `lang` opcional), `explain_dictamen_simply` (`dictamen_id` requerido y `audience` y `lang` opcionales) e `interpret_dictamen` (`dictamen_id` requerido y `lang` opcional). Cada prompt DEBE declarar su descripción y la obligatoriedad de sus argumentos, y DEBE estar bakeado vía `go:embed` en `internal/prompts/cgr/prompts.yaml`. Los prompts DEBEN estar en inglés pero incluir `{{if .lang}}{{.lang}}{{else}}el idioma del usuario (default español){{end}}`.
+El servidor DEBE exponer 6 prompts curados vía `prompts/list` desde `internal/prompts/cgr`: `search_jurisprudence` (argumentos `query` requerido, `order` y `exact_search` y `lang` opcionales), `analyze_dictamen` (`dictamen_id` requerido y `lang` opcional), `explain_dictamen_simply` (`dictamen_id` requerido y `audience` y `lang` opcionales), `interpret_dictamen` (`dictamen_id` requerido y `lang` opcional), `analyze_contable_instructivo` (`contable_id` e `instructivo_id` opcionales, uno de los dos requerido en la práctica, y `lang` opcional) y `analyze_auditoria_consolidado` (`auditoria_id` o `consolidado_id` opcionales, y `lang` opcional). Cada prompt DEBE declarar su descripción y la obligatoriedad de sus argumentos, y DEBE estar bakeado vía `go:embed` en `internal/prompts/cgr/prompts.yaml`. Los prompts DEBEN estar en inglés pero incluir `{{if .lang}}{{.lang}}{{else}}el idioma del usuario (default español){{end}}`.
 
 #### Scenario: Lista incluye prompts CGR
 - **WHEN** un cliente MCP consulta `prompts/list`
-- **THEN** la respuesta incluye los 4 prompts CGR con sus descripciones y argumentos (con `required` donde corresponde) además de los 9 prompts BCN
+- **THEN** la respuesta incluye los 6 prompts CGR con sus descripciones y argumentos (con `required` donde corresponde) además de los 10 prompts BCN (16 en total)
 
 #### Scenario: Prompt CGR servido sin red
 - **WHEN** un cliente pide `prompts/get` para `search_jurisprudence` con la API de Contraloría inaccesible

@@ -69,7 +69,7 @@ var allowedSearchSources = []string{"dictamenes", "instructivos", "contable", "a
 
 // RegisterSearchCgr registers the generic search_cgr tool.
 func RegisterSearchCgr(srv *mcp.Server, client cgr.CgrClient) {
-	mcp.AddTool(srv, &mcp.Tool{
+	registerTool(srv, &mcp.Tool{
 		Name:        "search_cgr",
 		Description: "Search Contraloría by source: dictamenes|instructivos|contable|auditoria|legislacion|cuentas|consolidados|web|todos. Returns paginated 20/page with source-specific fields and citation URLs. Use get_cgr_* to fetch full document. Supports order date/dateasc/score, exact_search, page 1..500.",
 	}, makeSearchCgr(client))

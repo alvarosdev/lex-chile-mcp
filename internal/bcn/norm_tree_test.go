@@ -84,3 +84,44 @@ func (s *NormTreeSuite) TestFlattenStructureKeepsOrderAndDepth() {
 	}
 	s.True(hasNested, "nested structure entries must be flattened with depth")
 }
+
+func (s *NormTreeSuite) TestContentSizesMirrorCharCount() {
+	sizes := ContentSizes(s.norma.Html)
+	s.Require().NotEmpty(sizes)
+
+	// Every top-level block's subtree size equals the rendered char count
+	// of that subtree — the fold renderer depends on this equality.
+	for _, block := range s.norma.Html {
+		subtree := []HtmlBlock{block}
+		s.Equal(ContentCharCount(subtree), sizes[block.I],
+			"subtree size for block %d must mirror the renderer count", block.I)
+	}
+
+	// Nested articles are mapped too.
+	articleID := s.norma.Html[1].H[0].I
+	articleSubtree, ok := s.norma.SectionContent(articleID)
+	s.Require().True(ok)
+	s.Equal(ContentCharCount(articleSubtree), sizes[articleID])
+
+	// Unknown ids are absent from the map.
+	_, ok = sizes[999999999]
+	s.False(ok)
+}
+
+func (s *NormTreeSuite) TestSectionStructureReturnsSubtree() {
+	tituloID := s.norma.Estructura[1].I
+	subtree, ok := s.norma.SectionStructure(tituloID)
+	s.Require().True(ok)
+	s.Require().Len(subtree, 1)
+	s.Equal(tituloID, subtree[0].I)
+	s.Require().NotEmpty(subtree[0].H, "the structure subtree must keep nested parts")
+
+	// The flattened subtree matches the whole flatten restricted to the run.
+	full := FlattenStructure(s.norma.Estructura)
+	sub := FlattenStructure(subtree)
+	s.Equal(sub[0].Name, full[1].Name, "the subtree root is the requested part")
+	s.Less(len(sub), len(full))
+
+	_, ok = s.norma.SectionStructure(999999999)
+	s.False(ok, "unknown section ids must not resolve")
+}

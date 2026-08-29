@@ -99,12 +99,15 @@ func (s *GetLawSuite) TestGetLawFullContent() {
 	s.Contains(text, "### Encabezado")
 	s.Contains(text, "LEY NÚM. 21.600")
 
-	// Structured content: typed, complete metadata + content included.
+	// Structured content: typed, complete metadata; the markdown body
+	// travels in the text view only — never duplicated here.
 	sc, ok := res.StructuredContent.(map[string]any)
 	s.Require().True(ok, "structuredContent expected, got %T", res.StructuredContent)
 	metadatos := sc["metadatos"].(map[string]any)
 	s.Equal("CREA EL SERVICIO DE BIODIVERSIDAD", metadatos["titulo_norma"])
-	s.Contains(sc["content"], "### Encabezado")
+	_, hasContent := sc["content"]
+	s.False(hasContent, "content markdown must never be duplicated in structuredContent")
+	s.NotEmpty(sc["estructura"])
 }
 
 func (s *GetLawSuite) TestGetLawStructureOnlyOmitsContent() {
@@ -193,18 +196,24 @@ func (s *GetLawSuite) TestGetLawSectionReturnsOnlySubtree() {
 	s.Contains(text, "### TÍTULO I")
 	s.Contains(text, "#### Artículo 1º")
 	s.Contains(text, "Objeto.")
-	s.NotContains(text, "LEY NÚM. 21.600", "content outside the section must be omitted")
 	// The section view stays lightweight: summary and bills are skipped in
 	// the text (they ride along complete in the structured output).
 	s.NotContains(text, "Summary:", "section view must not repeat the law summary")
 	s.NotContains(text, "## Related bills", "section view must not repeat the related bills")
-	// The structure stays complete so the agent can chain the next section.
-	s.Contains(text, "- Encabezado")
+	// The structure block is the LOCAL sub-TOC of the section's children —
+	// the global index does not travel with section responses.
+	s.Contains(text, "- Artículo 1º · section_id: 3")
+	s.Contains(text, "- Artículo 2º · section_id: 4")
+	s.NotContains(text, "- Encabezado", "global index must not travel with section responses")
 
 	sc, ok := res.StructuredContent.(map[string]any)
 	s.Require().True(ok)
 	s.Equal(float64(2), sc["section_id"])
-	s.NotContains(sc["content"], "Encabezado")
+	estructura := sc["estructura"].([]any)
+	// Subtree only: TÍTULO I root + its two articles, no global entries.
+	s.Len(estructura, 3)
+	_, hasContent := sc["content"]
+	s.False(hasContent, "content markdown must never be duplicated in structuredContent")
 }
 
 func (s *GetLawSuite) TestGetLawSectionNotFoundSuggestsStructureOnly() {
