@@ -6,230 +6,98 @@
 [![Go](https://img.shields.io/badge/Go-blue?logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Dale a tu IA acceso directo a las leyes chilenas. Pregunta en lenguaje natural y te responde citando la fuente oficial — **LeyChile (BCN)** y **Contraloría (CGR)**.
+Servidor MCP que proporciona a su agente de IA acceso estructurado a las leyes chilenas — **LeyChile (BCN)** — y a la jurisprudencia administrativa de la **Contraloría General de la República (CGR)**. Las respuestas se construyen con texto citado de la fuente oficial.
 
-> ⚠️ Proyecto comunitario, no es de BCN/CGR ni del Estado. Es informativo, no es asesoría legal. Verifica siempre en la fuente oficial.
+## Qué es y qué no es
 
-## ✨ Qué puede hacer
+- **Es** una herramienta de orientación: permite buscar normas, leer su texto vigente, comparar versiones y consultar la jurisprudencia administrativa que interpreta cómo se aplican las leyes en el país.
+- **No es** asesoría legal. No reemplaza el criterio de un profesional del derecho ni la lectura formal de los textos legales. El carácter vinculante de una norma o la interpretación definitiva corresponden exclusivamente a las instancias oficiales competentes.
+- **Verifique siempre** en la fuente oficial ([bcn.cl](https://www.bcn.cl) / [contraloria.cl](https://www.contraloria.cl)) antes de actuar sobre cualquier información recibida.
+- Proyecto comunitario: no está afiliado a la BCN, a Contraloría ni al Estado.
+
+## Cómo funciona
+
+```mermaid
+flowchart LR
+    agent["Su agente de IA<br/>(Claude Code, Codex,<br/>Grok, pi, omp…)"]
+    server["**lex-chile-mcp**<br/>15 herramientas · 16 guías<br/>saneo de texto · caché en memoria<br/>presupuesto de salida"]
+    bcn["LeyChile (BCN)<br/>bcn.cl"]
+    cgr["Contraloría (CGR)<br/>contraloria.cl"]
+
+    agent <-->|"MCP (HTTP o STDIO)<br/>texto citado con su fuente oficial"| server
+    server <-->|"HTTPS<br/>HTML/JSON"| bcn
+    server <-->|"HTTPS<br/>HTML/JSON"| cgr
+```
+
+- El servidor está escrito en Go y expone **15 herramientas** (5 de BCN y 10 de CGR) más **16 guías** que le enseñan al modelo el flujo de trabajo: buscar, verificar y citar paso a paso.
+- Todo el texto que proviene de los servicios públicos se **sanea** antes de llegar al modelo (se eliminan etiquetas, entidades y ruido del HTML original).
+- Una **caché en memoria** evita repetir descargas idénticas y un **presupuesto de salida** impide que una norma extensa sature el contexto del modelo; en ese caso el servidor entrega un mapa navegable de la norma para leerla por secciones.
+- El servidor **no persiste datos**: la configuración va embebida en el binario y las cachés viven solo en memoria.
+
+La referencia completa de herramientas está en [TOOLS.md](TOOLS.md).
+
+## Qué puede hacer
 
 **Leyes y normas (LeyChile):**
-* 🔍 Buscar leyes, decretos y resoluciones por palabras — "Ley 21.600", "arriendo"
-* 📖 Leer la ley completa en texto claro, con títulos y artículos
-* ⚡ Resumen rápido sin abrir todo el texto
-* 🕰️ Ver cómo era una ley en una fecha pasada
-* 🔗 Ver qué leyes la modificaron y a cuáles modificó
+- Buscar leyes, decretos y resoluciones por texto ("Ley 21.600", "arriendo").
+- Leer la norma en Markdown con su estructura y artículos, completa o por sección.
+- Obtener el resumen oficial antes de leer el texto completo.
+- Consultar la versión vigente en cualquier fecha pasada.
+- Revisar la historia legislativa: qué leyes la modificaron y a cuáles modificó.
 
-**Contraloría — 8 fuentes vía `search_cgr` (9 valores `source`) + 6 `get_*`:**
-* 🏛️ Dictámenes — jurisprudencia vinculante ("bonos", "licencias", "toma de razón")
-* 📜 Instructivos — criterio general IN23 día funcionario, E462387 exención toma de razón
-* 🧾 Contable — oficios NICSP E080961, OFE... (donaciones, EEFF municipales)
-* 🔍 Auditoría — Informes Finales 371/2026, 10k+ `municipalidad`, 2831 `licencias` (fiscalización, `contenido_pdf` truncado a 30k)
-* 📊 Consolidados — CIC21/2026 licencias con honorarios (8 hits `licencias médicas`)
-* ⚖️ Cuentas — sentencias Juzgado de Cuentas 2982331 (645 `municipalidad`)
-* 📚 Legislación — AFECTO toma de razón RES 569, DFL 1/2020 (9.5k `municipalidad`)
-* 🌐 Web — contexto (opcional, no jurisprudencia)
+**Contraloría — jurisprudencia administrativa en 8 fuentes:**
+- Dictámenes (jurisprudencia vinculante), instructivos generales, oficios contables, informes de auditoría, consolidados CIC, sentencias del Juzgado de Cuentas, legislación (toma de razón) y contexto web.
+- Búsqueda única multi-fuente (`search_cgr`) con ficha individual por tipo de documento, y conteo opcional por tipo para dimensionar una búsqueda.
 
-> `search_cgr` enum `source`: `dictamenes` | `instructivos` | `contable` | `auditoria` | `legislacion` | `cuentas` | `consolidados` | `web` | `todos` (9). Default `dictamenes`; alias `search_cgr_dictamenes` sigue vigente. `get_*` por dominio: `get_cgr_dictamen`, `get_cgr_instructivo`, `get_cgr_contable`, `get_cgr_auditoria`, `get_cgr_consolidado`, `get_cgr_cuenta`, `get_cgr_legislacion`. Pacing recomendado 3-4s entre requests; `count_cgr_jurisprudencia` (`POST /count/todos`) es opcional bajo carga — si hace timeout, pasa directo a `search_cgr`.
+## Precauciones de uso
 
-**Para tu IA:**
-* 🧠 16 guías listas (10 BCN + 6 CGR) — analiza, explica simple, compara versiones, revisa si es constitucional, busca jurisprudencia multi-source y analiza contable/auditoría
+- **Servicios públicos**: las consultas llegan a bcn.cl y contraloria.cl. Deje 3-4 segundos entre llamadas a Contraloría y evite búsquedas masivas o reintentos en bucle; el objetivo es no saturar servicios gratuitos de uso público.
+- **Volumen de datos**: las normas pueden tener cientos de miles de caracteres y algunos informes de auditoría son extensos. El servidor trunca contenidos muy grandes (con el enlace al PDF oficial) y degrada las normas enormes a un mapa navegable; prefiera resúmenes y lecturas por sección antes que documentos completos.
+- **Orientación, no asesoría**: todo resultado es referencial. Confirme el texto vigente y su interpretación con un profesional y en las fuentes oficiales.
 
-## Cómo correr
+## Ejemplos de uso
 
-Elige contenedor (recomendado) o programa solo. Todos responden en `http://localhost:8000/mcp` y `curl http://localhost:8000/health`.
+```
+Busque la Ley 21.600
+→ encuentra la norma (norm_id 1195666) con su resumen oficial
 
-### Podman (preferido)
+¿Qué dice el artículo 1 de la Ley 21.600?
+→ muestra el texto del artículo citando la fuente
+
+Busque dictámenes de Contraloría sobre "bonos"
+→ lista de resultados con enlace al PDF oficial
+
+Busque el instructivo IN23 sobre día funcionario municipal
+→ ficha del instructivo con su texto y enlaces
+
+Busque el oficio contable E080961 (NICSP)
+→ ficha del oficio con destinatarios y texto
+
+Compare la Ley 20.000 entre 2015 y 2020
+→ reporte de artículos agregados, modificados o eliminados
+```
+
+## Inicio rápido
 
 ```bash
-# desde tu código (local)
-podman build -t lex-chile-mcp:local .
-podman run -d -p 8000:8000 --name lex-chile-mcp lex-chile-mcp:local
-
-# desde internet (sin compilar)
 podman pull ghcr.io/alvarosdev/lex-chile-mcp:latest
-podman run -d -p 8000:8000 --name lex-chile-mcp ghcr.io/alvarosdev/lex-chile-mcp:latest
-
-curl http://localhost:8000/health  # -> {"status":"healthy"}
+podman run -d --name lex-chile-mcp -p 8000:8000 ghcr.io/alvarosdev/lex-chile-mcp:latest
+curl http://localhost:8000/health   # {"status":"healthy"}
 ```
 
-Con clave (opcional):
-```bash
-podman run -d -p 8000:8000 -e MCP_AUTH_TOKEN=tu-clave lex-chile-mcp:local
-# o con GHCR
-podman run -d -p 8000:8000 -e MCP_AUTH_TOKEN=tu-clave ghcr.io/alvarosdev/lex-chile-mcp:latest
-```
+Para instalarlo por otras vías (binario, compilación, Docker, compose), ejecutarlo en modo STDIO y conectarlo a su agente (Claude Code, Codex, Grok, pi, Oh My Pi), consulte [INSTALL.md](INSTALL.md).
 
-**Si tu agente lo lanza directo** (sin dejarlo corriendo):
-```bash
-podman run --rm -i -e MCP_TRANSPORT=stdio lex-chile-mcp:local
-# GHCR
-podman run --rm -i -e MCP_TRANSPORT=stdio ghcr.io/alvarosdev/lex-chile-mcp:latest
-# -i mantiene la conexión, sin -t, --rm se borra al cerrar
-```
+## Documentación
 
-### Docker (alternativa)
-
-```bash
-docker build -t lex-chile-mcp:local .
-docker run -d -p 8000:8000 --name lex-chile-mcp lex-chile-mcp:local
-curl http://localhost:8000/health
-# si tu agente lo lanza directo
-docker run --rm -i -e MCP_TRANSPORT=stdio lex-chile-mcp:local
-```
-
-Con `docker-compose`:
-```bash
-make compose-up   # levanta con healthcheck
-make compose-down
-```
-
-### Programa solo (sin contenedor)
-
-No necesitas instalar nada más. Baja el archivo y ejecútalo.
-
-**Descarga** el último `dist.zip` en [Releases](../../releases):
-```bash
-unzip dist.zip
-./dist/linux/amd64/lex-chile-mcp              # queda corriendo en http://127.0.0.1:8000/mcp
-MCP_TRANSPORT=stdio ./dist/linux/amd64/lex-chile-mcp  # si tu agente lo lanza directo
-```
-
-**O compílalo tú:**
-```bash
-make build          # crea bin/lex-chile-mcp
-./bin/lex-chile-mcp
-make dist           # crea dist.zip para los 6 sistemas
-```
-
-Trae todo adentro, no necesita otros archivos:
-```
-dist.zip
-├── windows/{amd64,arm64}/lex-chile-mcp.exe
-├── linux/{amd64,arm64}/lex-chile-mcp
-├── darwin/{amd64,arm64}/lex-chile-mcp
-└── SHA256SUMS.txt
-```
-
-## Conectar tu agente
-
-**Si dejaste el programa corriendo (http):**
-```json
-{
-  "mcpServers": {
-    "lex-chile": {
-      "type": "http",
-      "url": "http://localhost:8000/mcp",
-      "headers": { "Authorization": "Bearer tu-clave" }
-    }
-  }
-}
-```
-Sin clave, borra la línea `headers`.
-
-**Si tu agente lo abre cada vez (stdio):**
-```json
-// programa solo
-{
-  "mcpServers": {
-    "lex-chile": {
-      "command": "/ruta/absoluta/a/lex-chile-mcp",
-      "env": { "MCP_TRANSPORT": "stdio" }
-    }
-  }
-}
-
-// con Podman (sin instalar el programa)
-{
-  "mcpServers": {
-    "lex-chile": {
-      "command": "podman",
-      "args": ["run", "--rm", "-i", "-e", "MCP_TRANSPORT=stdio", "lex-chile-mcp:local"]
-    }
-  }
-}
-```
-Para GHCR usa `ghcr.io/alvarosdev/lex-chile-mcp:latest`. Para Docker cambia `podman` por `docker`. La clave no se usa aquí.
-
-**Atajos por asistente:**
-```bash
-# el agente abre el contenedor con Podman (stdio) — local
-claude mcp add --transport stdio lex-chile -- podman run --rm -i -e MCP_TRANSPORT=stdio lex-chile-mcp:local
-codex mcp add --transport stdio lex-chile -- podman run --rm -i -e MCP_TRANSPORT=stdio lex-chile-mcp:local
-grok mcp add --transport stdio lex-chile -- podman run --rm -i -e MCP_TRANSPORT=stdio lex-chile-mcp:local
-
-# con GHCR (sin compilar) — haz pull primero si quieres
-podman pull ghcr.io/alvarosdev/lex-chile-mcp:latest
-claude mcp add --transport stdio lex-chile -- podman run --rm -i -e MCP_TRANSPORT=stdio ghcr.io/alvarosdev/lex-chile-mcp:latest
-codex mcp add --transport stdio lex-chile -- podman run --rm -i -e MCP_TRANSPORT=stdio ghcr.io/alvarosdev/lex-chile-mcp:latest
-grok mcp add --transport stdio lex-chile -- podman run --rm -i -e MCP_TRANSPORT=stdio ghcr.io/alvarosdev/lex-chile-mcp:latest
-# Docker: cambia podman → docker
-
-# si ya lo dejaste corriendo (http)
-claude mcp add --transport http lex-chile http://localhost:8000/mcp
-codex mcp add --transport http lex-chile http://localhost:8000/mcp
-grok mcp add --transport http lex-chile http://localhost:8000/mcp
-```
-
-## Ajustes básicos
-
-| Qué | Valor inicial | Para qué |
-|-----|---------------|----------|
-| `MCP_TRANSPORT` | `http` | `http` = queda corriendo, `stdio` = tu agente lo abre |
-| `MCP_PORT` | `8000` | Por dónde escucha (solo en http) |
-| `MCP_AUTH_TOKEN` | *(vacío)* | Clave para http; en stdio se ignora |
-
-No necesitas otros archivos.
-
-## Qué puedes preguntar
-
-```
-Busca la Ley 21.600
-→ encuentra el ID 1195666
-
-¿Qué dice el Artículo 1 de la Ley 21.600?
-→ te muestra el texto citando la ley
-
-Busca dictámenes de Contraloría sobre "bonos"
-→ lista con link al PDF oficial
-
-Busca instructivo IN23 sobre día funcionario municipal
-→ IN23N26 exento toma razón
-
-Busca oficio contable E080961 NICSP
-→ OFE0809612600 Municipalidad La Pintana
-
-Busca CIC21 licencias médicas
-→ CIC21/2026 150 servidores con licencia y honorarios
-
-Busca resolución AFECTO toma de razón
-→ RES 569 CONTR personal
-```
-
-El sistema trae 16 guías (10 BCN + 6 CGR) que le enseñan a tu IA cómo buscar y citar paso a paso.
-
-### Contraloría: herramientas y pacing
-
-| Herramienta | Descripción |
-|-------------|-------------|
-| `search_cgr` | Búsqueda genérica multi-source. `source` enum 9 valores: `dictamenes`, `instructivos`, `contable`, `auditoria`, `legislacion`, `cuentas`, `consolidados`, `web`, `todos` (default `dictamenes`). Params: `query`, `exact_search`, `order` (`date`/`dateasc`/`score`), `page` (1..500, 20 por página). |
-| `search_cgr_dictamenes` | Alias delgado que fija `source=dictamenes` (compatibilidad). |
-| `get_cgr_dictamen` | Ficha dictamen por `dictamen_id` (`E…N…`). |
-| `get_cgr_instructivo` | Ficha instructivo por `instructivo_id` (`IN23N26`, `E462387N24`). |
-| `get_cgr_contable` | Ficha contable por `contable_id` (`E080961`, `OFE0809612600`). |
-| `get_cgr_auditoria` | Ficha auditoría por `auditoria_id` (`371/2026`). `contenido_pdf` truncado a 30k + link `pdf`. |
-| `get_cgr_consolidado` | Ficha consolidado por `consolidado_id` (`CIC21/2026`). Incluye `resena` + `contenido_extraido` + `documento_cic_pdf_web`. |
-| `get_cgr_cuenta` | Ficha Juzgado de Cuentas por `cuenta_id` (`2982331`). |
-| `get_cgr_legislacion` | Ficha legislación toma de razón por `legislacion_id` (`RZA…`/`FRA…`). |
-| `count_cgr_jurisprudencia` | Conteo por tipo (`POST /count/todos`, buckets `count_by_type`). Opcional bajo carga: si timeout/breaker, pasa directo a `search_cgr`. |
-
-**Pacing:** deja 3-4s entre requests a `contraloria.cl` para evitar bloqueo. Si `count` falla por carga, no reintentes en bucle: usa `search_cgr` directo (`order=score` si `total>500`).
-
-## Dónde conseguirlo
-
-Imágenes listas en `ghcr.io/alvarosdev/lex-chile-mcp:0.0.9` y `:latest` (para `linux/amd64` y `linux/arm64`). Si aún no hay release, usa `podman build` de arriba.
+- [INSTALL.md](INSTALL.md) — instalación, modos de ejecución (HTTP/STDIO), contenedores y conexión de agentes.
+- [TOOLS.md](TOOLS.md) — referencia técnica de las 15 herramientas y las 16 guías.
 
 ## Aviso y licencia
 
-Uso informativo y educativo. No guarda tus datos (solo memoria temporal). No satures los servicios públicos y verifica siempre en la fuente oficial.
+Uso informativo y educativo. El servidor no guarda sus datos (solo memoria temporal) y no debe utilizarse para saturar los servicios públicos consultados. Verifique siempre en la fuente oficial.
 
-Licencia MIT — ver [LICENSE](LICENSE). Créditos de terceros en [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES).
+**Sin garantía (tal cual, "as is").** Este software se entrega "tal cual" y "según disponibilidad", sin garantía de ningún tipo, expresa o implícita, incluidas, entre otras, las garantías de comerciabilidad, aptitud para un propósito particular y no infracción. En ningún caso los autores o titulares de derechos serán responsables de reclamaciones, daños u otras responsabilidades, derivadas del software o del uso que se le entregue. La información que entrega este servidor es orientativa: no constituye asesoría legal y debe verificarse en las fuentes oficiales.
+
+> This software is provided "as is" and "as available", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability arising from, out of, or in connection with the software or its use. The information provided by this server is for orientation only; it is not legal advice and must be verified against official sources.
+
+El texto normativo completo de la licencia y de la limitación de responsabilidad se encuentra en [LICENSE](LICENSE). Créditos de terceros en [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES).
