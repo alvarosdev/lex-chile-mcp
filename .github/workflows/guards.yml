@@ -1,0 +1,29 @@
+name: Branch guards
+
+# Enforced via repository rulesets as a required status check. Main only
+# accepts PRs from release/* or hotfix/* branches; develop accepts PRs
+# from any branch (no-op pass there).
+on:
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  guard-branch-sources:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify PR source branch
+        run: |
+          if [ "${{ github.base_ref }}" != "main" ]; then
+            echo "No source restriction for ${{ github.base_ref }} — pass."
+            exit 0
+          fi
+          if [[ "${{ github.head_ref }}" =~ ^(release|hotfix)/ ]]; then
+            echo "✓ ${{ github.head_ref }} is allowed into main"
+            exit 0
+          fi
+          echo "✗ PRs into main must come from release/* or hotfix/* branches"
+          echo "  (got: ${{ github.head_ref }}). See the branch protection policy."
+          exit 1
