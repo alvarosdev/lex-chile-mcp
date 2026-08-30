@@ -19,7 +19,7 @@ context: |
     form. Translation ends at the boundary (norm_id in the tool -> idNorma in
     the query param).
 
-  Tech stack: Go 1.27. MCP server with modelcontextprotocol/go-sdk v1.7.0
+  Tech stack: Go 1.27 or newer. MCP server with modelcontextprotocol/go-sdk v1.7.0
   (stdio + streamable HTTP, one instance serving both transports). HTTP client
   resty v3 (resty.dev/v3 v3.0.0-rc.3) with one *resty.Client per resource
   (built-in count-based breaker + per-request retry declared in the YAML).
@@ -76,3 +76,14 @@ context: |
     podman-build/run/stop/logs and make compose-up/down (chain:
     podman-compose -> docker compose). CI separate from publish (docker
     buildx amd64+arm64 on GitHub -> GHCR with v* tags).
+  - Documentation: user-facing docs are README.md (functional: what it is,
+    what it does), INSTALL.md (setup: build, install, run, agent
+    integration) and TOOLS.md (technical tool reference). All three are
+    written in formal neutral Latin American Spanish for Chilean users.
+    Every change that creates or modifies user-observable behavior (tools,
+    prompts, env vars, transports, build/publish workflow, release
+    artifacts) MUST review these docs as part of the change and update
+    whichever sections describe the changed behavior, keeping INSTALL.md
+    and TOOLS.md as the single source of truth (README links, never
+    duplicates). Spec exploration for new behavior should name the
+    affected doc files in the proposal.
