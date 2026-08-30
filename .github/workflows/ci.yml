@@ -29,6 +29,7 @@ jobs:
         run: go vet ./...
 
       - name: Vulnerability scan
-        # Pinned version for reproducible builds; fails the job on known
-        # vulnerabilities in dependencies.
-        run: go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...
+        # Tool version pinned so CI only breaks for our changes (bump
+        # manually once in a while); the vuln DB is fetched live on every
+        # run regardless. Fails the job on known vulnerabilities in deps.
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.7.0 ./...
