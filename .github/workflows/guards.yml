@@ -1,8 +1,13 @@
 name: Branch guards
 
-# Enforced via repository rulesets as a required status check. Main only
-# accepts PRs from release/* or hotfix/* branches; develop accepts PRs
-# from any branch (no-op pass there).
+# Gitflow source policy, enforced as a required status check via the
+# repository rulesets:
+#   main    <- release/* | hotfix/*
+#   develop <- feature/* | backport/* | chore/* | release/* | hotfix/*
+# Direct pushes to both branches are blocked by the rulesets themselves
+# (pull_request rule, no bypass actors). Branch names reach this script
+# through the env block — never interpolated into the shell — so a hostile
+# branch name cannot inject commands.
 on:
   pull_request:
     branches: [main, develop]
@@ -15,15 +20,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Verify PR source branch
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
-          if [ "${{ github.base_ref }}" != "main" ]; then
-            echo "No source restriction for ${{ github.base_ref }} — pass."
-            exit 0
-          fi
-          if [[ "${{ github.head_ref }}" =~ ^(release|hotfix)/ ]]; then
-            echo "✓ ${{ github.head_ref }} is allowed into main"
-            exit 0
-          fi
-          echo "✗ PRs into main must come from release/* or hotfix/* branches"
-          echo "  (got: ${{ github.head_ref }}). See the branch protection policy."
-          exit 1
+          deny() {
+            echo "✗ PRs into $1 must come from: $2"
+            echo "  (got: $HEAD_REF). See the branch protection policy."
+            exit 1
+          }
+
+          case "$BASE_REF" in
+            main)
+              case "$HEAD_REF" in
+                release/*|hotfix/*)
+                  echo "✓ $HEAD_REF is allowed into main"
+                  ;;
+                *) deny "main" "release/* or hotfix/* (gitflow)" ;;
+              esac
+              ;;
+            develop)
+              case "$HEAD_REF" in
+                feature/*|backport/*|chore/*|release/*|hotfix/*)
+                  echo "✓ $HEAD_REF is allowed into develop"
+                  ;;
+                *) deny "develop" "feature/*, backport/*, chore/*, release/* or hotfix/* (gitflow)" ;;
+              esac
+              ;;
+            *)
+              echo "No source restriction for $BASE_REF — pass."
+              ;;
+          esac
